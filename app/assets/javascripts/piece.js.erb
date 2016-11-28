@@ -1,0 +1,27 @@
+// Helper method to access images, taken from
+// https://archive.dennisreimann.de/blog/referencing-rails-assets-in-coffeescript/
+<%
+imgs = {}
+Dir.chdir("#{Rails.root}/app/assets/images/") do
+  imgs = Dir["**"].inject({}) {|h,f| h.merge! f => image_path(f)}
+end
+%>
+
+image_path = function(name) {
+  return <%= imgs.to_json %>[name];
+}
+
+// Piece class
+function Piece(name, id) {
+  this.name = name;
+  this.id = id;
+  this.image = this.id + ".png";
+}
+
+Piece.prototype.imageTag = function() {
+    var imageNode = document.createElement("img");
+    imageNode.setAttribute("src", image_path(this.image));
+    imageNode.setAttribute("class", "piece");
+    imageNode.setAttribute("id", this.id);
+    return imageNode;
+}
