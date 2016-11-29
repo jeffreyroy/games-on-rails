@@ -30,14 +30,29 @@ var runGame = function() {
 
   var clickPiece = function(piece) { 
     console.log("clicked on piece " + piece.id);
+    data = location(piece);
     if(game.activePiece == piece) {
       game.activePiece = null;
       unHighlightTargets(piece);
     }
     else {
-      game.activePiece = piece;
-      highlightTargets(piece);
+      console.log(data);
+      $.ajax({
+        method: "post",
+        url: "annuvin",
+        data: data
+      })
+      .done(function(response){
+        game.activePiece = piece;
+        // highlightTargets(response);
+        console.log(response);
+
+      })
+      .fail(function(response){
+        alert("Can't get move for that piece!");
+      })
     }
+
   }
 
   var highlightTargets = function(piece) {
@@ -55,6 +70,12 @@ var runGame = function() {
       target.classList.remove("highlight");
     }
   }
+
+  var location = function(piece) {
+    var cell = piece.parentElement;
+    return gameBoard.coordinates(cell);
+  }
+
 
   var clickCell = function(cell) { 
     console.log("clicked on cell " + event.target.id);

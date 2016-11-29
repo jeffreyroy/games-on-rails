@@ -1,10 +1,16 @@
 class GamesController < ApplicationController
-  attr_accessor :currentGame
+  attr_accessor :current_game
   def index
   end
 
   def annuvin
-    currentGame = Annuvin.new
-    @blurb = "Welcome to Annuvin!"
+    current_game = Annuvin.new
+    @blurb = current_game.get_pieces(current_game.current_state).join(" ")
   end
+
+  def annuvin_move
+    @blurb = current_game.get_pieces(current_game.current_state).join(" ")
+    render :json => @blurb
+  end
+
 end

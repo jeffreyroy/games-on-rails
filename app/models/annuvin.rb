@@ -54,6 +54,24 @@ class Annuvin < Game
                         :force_analysis => false }
   end
 
+  # Placeholders to save and restore current state
+  def export
+    s = SavedGame.first
+    s.position_array = @current_state[:position]
+    s.human_to_move = :player == human
+    s.human_pieces_left = @current_state[:pieces_left][0]
+    s.computer_pieces_left = @current_state[:pieces_left][1]
+    if moving_piece
+      s.moving_piece_row = @current_state[:moving_piece][0]
+      s.moving_piece_column = @current_state[:moving_piece][1]
+    else
+      s.moving_piece_row = -1
+      s.moving_piece_column = -1
+    end
+    s.moves_left = @current_state[:moves_left]
+    s.force_analysis = @current_state[:force_analysis]
+  end
+
   # Initialize 3x3 hex board
   def init_board
     board_string = self.class::INITIAL_BOARD
