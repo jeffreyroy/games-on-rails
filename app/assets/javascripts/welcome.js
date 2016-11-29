@@ -30,16 +30,20 @@ var runGame = function() {
 
   var clickPiece = function(piece) { 
     console.log("clicked on piece " + piece.id);
-    data = location(piece);
+    var loc = location(piece);
+    // Convert to smaller board used by server
+    loc[1] -= 2;
+    data = { move: loc };
     if(game.activePiece == piece) {
       game.activePiece = null;
       unHighlightTargets(piece);
     }
     else {
+      // Ajax call to get list of legal moves
       console.log(data);
       $.ajax({
         method: "post",
-        url: "annuvin",
+        url: "annuvin/drag",
         data: data
       })
       .done(function(response){
@@ -73,6 +77,7 @@ var runGame = function() {
 
   var location = function(piece) {
     var cell = piece.parentElement;
+    console.log("location = " + gameBoard.coordinates(cell))
     return gameBoard.coordinates(cell);
   }
 

@@ -35,6 +35,9 @@ class Annuvin < Game
     initialize_ai(0, 100)
   end
 
+
+
+
   def reset
     player = :human
     position = init_board
@@ -73,9 +76,26 @@ class Annuvin < Game
     s.save
   end
 
+  # Parse string representing position and return array
+  def position_string_to_array(string)
+    p string
+    size = Math.sqrt(string.length).to_i
+    p size
+    array = chunk(string, size).map { |row| chunk(row, 1) }
+    p array
+    array
+  end
+
+  # Helper function to split string
+  def chunk(string, size)
+    string.scan(/.{1,#{size}}/)
+  end
+
+
   def import
     s = SavedGame.first
-    @current_state[:position] = s.position_array
+    p "position: " + s.position
+    @current_state[:position] = position_string_to_array(s.position)
     player = s.human_to_move ? :human : :computer
     @current_state[:pieces_left] = {
       :human => s.human_pieces_left,
@@ -283,6 +303,20 @@ class Annuvin < Game
       new_state[:player] = opponent(player)
     end
     new_state
+  end
+
+
+  # Import player's click
+  def import_drag(move_param)
+    p @current_state
+    # Integerize move parameter
+    move = move_param.map {|c| c.to_i }
+    p move
+    # Return list of legal moves
+    list = get_moves(@current_state, move, @current_state[:moves_left], false)
+    p list
+
+    list
   end
 
   # Get the player's move and make it
