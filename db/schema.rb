@@ -13,11 +13,13 @@
 ActiveRecord::Schema.define(version: 20161129035329) do
 
   create_table "saved_games", force: :cascade do |t|
+    t.integer  "user_id"
     t.text     "position"
     t.boolean  "human_to_move"
     t.integer  "human_pieces_left"
     t.integer  "computer_pieces_left"
     t.integer  "moving_piece_row"
+    t.integer  "moving_piece_column"
     t.integer  "moves_left"
     t.boolean  "force_analysis"
     t.datetime "created_at",           null: false

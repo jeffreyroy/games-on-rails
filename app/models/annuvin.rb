@@ -57,11 +57,11 @@ class Annuvin < Game
   # Placeholders to save and restore current state
   def export
     s = SavedGame.first
-    s.position_array = @current_state[:position]
-    s.human_to_move = :player == human
-    s.human_pieces_left = @current_state[:pieces_left][0]
-    s.computer_pieces_left = @current_state[:pieces_left][1]
-    if moving_piece
+    s.position = @current_state[:position].join
+    s.human_to_move = :player == :human
+    s.human_pieces_left = @current_state[:pieces_left][:human]
+    s.computer_pieces_left = @current_state[:pieces_left][:computer]
+    if @current_state[:moving_piece]
       s.moving_piece_row = @current_state[:moving_piece][0]
       s.moving_piece_column = @current_state[:moving_piece][1]
     else
@@ -70,6 +70,24 @@ class Annuvin < Game
     end
     s.moves_left = @current_state[:moves_left]
     s.force_analysis = @current_state[:force_analysis]
+    s.save
+  end
+
+  def import
+    s = SavedGame.first
+    @current_state[:position] = s.position_array
+    player = s.human_to_move ? :human : :computer
+    @current_state[:pieces_left] = {
+      :human => s.human_pieces_left,
+      :computer => s.computer_pieces_left
+    }
+    if s.moving_piece_row == -1
+      @current_state[:moving_piece] = nil
+    else
+      @current_state[:moving_piece][ s.moving_piece_row, s.moving_piece_column ]
+    end
+    @current_state[:moves_left] = s.moves_left
+    @current_state[:force_analysis] = s.force_analysis
   end
 
   # Initialize 3x3 hex board

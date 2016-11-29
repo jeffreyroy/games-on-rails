@@ -7,7 +7,7 @@ class CreateSavedGames < ActiveRecord::Migration[5.0]
       t.integer :human_pieces_left
       t.integer :computer_pieces_left
       t.integer :moving_piece_row
-      t.integer :moving_piece_row
+      t.integer :moving_piece_column
       t.integer :moves_left
       t.boolean :force_analysis
 
