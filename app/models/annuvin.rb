@@ -103,7 +103,7 @@ class Annuvin < Game
     if s.moving_piece_row == -1
       @current_state[:moving_piece] = nil
     else
-      @current_state[:moving_piece][ s.moving_piece_row, s.moving_piece_column ]
+      @current_state[:moving_piece] = [ s.moving_piece_row, s.moving_piece_column ]
     end
     @current_state[:moves_left] = s.moves_left
     @current_state[:force_analysis] = s.force_analysis
@@ -320,14 +320,15 @@ class Annuvin < Game
   end
 
   # Import player's drop
-  def import_drop(from_param, to_param)
+  def import_drop(from_param, to_param, cont)
 
-
-    # Integerize move parameter
-    from = from_param.map {|c| c.to_i }
-    to = to_param.map {|c| c.to_i }
-    p "You seem to be moving to from #{from} to #{to}"
-    make_move([from, to])
+    if !cont
+      # Integerize move parameter
+      from = from_param.map {|c| c.to_i }
+      to = to_param.map {|c| c.to_i }
+      p "You seem to be moving to from #{from} to #{to}"
+      make_move([from, to])
+    end
     # Get computer move
     response = best_move(@current_state)
     puts

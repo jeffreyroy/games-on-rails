@@ -28,13 +28,17 @@ class GamesController < ApplicationController
     # Get current state of game
     game = Annuvin.new
     game.import
-
+    p "Drop parameters:"
+    p params
     # Send move to model and return computer move
-    move = game.import_drop(params["from"], params["to"])
+    # Do we need to parse params as json?
+    cont = params["cont"] == "true"
+    move_param = params["move"]
+    move = game.import_drop(move_param["from"], move_param["to"], cont)
     p "*"*80
     # Make computer move
-    continue = game.current_state[:moving_piece] != nil
-    render :json => { move: move, continue: continue }
+    cont = game.current_state[:moving_piece] != nil
+    render :json => { move: move, cont: cont }
   end
 
 end

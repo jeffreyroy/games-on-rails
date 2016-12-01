@@ -103,26 +103,32 @@ var runGame = function() {
       movePiece(piece, cell);
       game.activePiece = null;
       // Perform Ajax call to submit move to server
-      submitMove(data)
+      submitMove(data, false);
     }
   }
 
-  var submitMove = function(moveData) {
+  var submitMove = function(moveData, cont) {
       // Perform Ajax call to submit move to server
+    var done = false;
       $.ajax({
         method: "post",
         url: "annuvin/drop",
-        data: moveData
+        data: { move: moveData, cont: cont }
       })
       .done(function(response){
-        console.log("Response: " + response);
+        console.log(response);
         move = response.move;
+        cont = response.cont;
+        // Make computer move
         from = gameBoard.cellByCoordinates(move[0][1], move[0][0] + 2);
         to = gameBoard.cellByCoordinates(move[1][1], move[1][0] + 2);
         updateBlurb("I move from " + from.id + " to " + to.id + ".");
         piece = from.firstChild;
         movePiece(piece, to);
-
+        // Continue making additional moves for computer if possible
+        if(cont) {
+          submitMove(moveData, true);
+        }
       })
       .fail(function(response){
         alert("Can't make that move!");
