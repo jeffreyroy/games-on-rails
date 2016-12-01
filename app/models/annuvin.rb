@@ -307,7 +307,7 @@ class Annuvin < Game
 
 
   # Import player's click
-  def import_drag(move_param)
+  def import_click(move_param)
     p @current_state
     # Integerize move parameter
     move = move_param.map {|c| c.to_i }
@@ -317,6 +317,20 @@ class Annuvin < Game
     p list
 
     list
+  end
+
+  # Import player's drop
+  def import_drop(move_param)
+    p @current_state
+    # Integerize move parameter
+    move = move_param.map {|c| c.to_i }
+    p move
+    make_move(move)
+    # Return computer move
+    response = best_move(@current_state)
+    p response
+
+    response
   end
 
   # Get the player's move and make it

@@ -4,6 +4,10 @@ $(document).ready(function() {
   
 });
 
+var updateBlurb = function(string) {
+  blurb = document.getElementById("blurb");
+  blurb.innerHTML = string;
+}
 
 var runGame = function() {
   game = new Game();
@@ -39,58 +43,83 @@ var runGame = function() {
       unHighlightTargets(piece);
     }
     else {
-      // Ajax call to get list of legal moves
-      console.log(data);
-      $.ajax({
-        method: "post",
-        url: "annuvin/drag",
-        data: data
-      })
-      .done(function(response){
-        game.activePiece = piece;
-        // highlightTargets(response);
-        console.log(response);
-
-      })
-      .fail(function(response){
-        alert("Can't get move for that piece!");
-      })
+      game.activePiece = piece;
+      highlightTargets(piece);
     }
 
   }
 
-  var highlightTargets = function(piece) {
-    var targetList = validTargets(piece);
-    for(i in targetList) {
-      target = targetList[i];
-      target.classList.add("highlight");
-    }
+  // get list of valid targets from server
+  highlightTargets = function(piece) {
+    var loc = location(piece.parentElement);
+    // Convert to smaller board used by server
+    loc[1] -= 2;
+    data = { move: loc };
+    console.log(data);
+    // Perform Ajax call to get list of legal moves from server
+    $.ajax({
+      method: "post",
+      url: "annuvin/click",
+      data: data
+    })
+    .done(function(response){
+      targetList = response.moves;
+      // Highlight targets
+      for(i in targetList) {
+        target = gameBoard.cellByCoordinates(targetList[i][0], targetList[i][1] + 2);
+        target.classList.add("highlight");
+      }
+    })
+    .fail(function(response){
+      alert("Can't get move for that piece!");
+    })
   }
 
+  // Remove all highlighting from game board
   var unHighlightTargets = function(piece) {
-    var targetList = validTargets(piece);
-    for(i in targetList) {
-      target = targetList[i];
+    var targetList = document.getElementsByClassName("highlight");
+    while(targetList.length > 0) {
+      target = targetList[0];
       target.classList.remove("highlight");
     }
   }
 
-  var location = function(piece) {
-    var cell = piece.parentElement;
+  var clickCell = function(cell) { 
+    console.log("clicked on cell " + event.target.id);
+    var loc = location(cell);
+    piece = game.activePiece;
+    // Make sure a piece is ready to move
+    if(piece && cell.classList.contains("highlight")) {
+      loc[1] -= 2;
+      data = { move: loc };
+      console.log(data);
+      updateBlurb("Thinking...");
+      unHighlightTargets(piece);
+      cell.appendChild(piece);
+      game.activePiece = null;
+      // Perform Ajax call to submit move to server
+      $.ajax({
+        method: "post",
+        url: "annuvin/drop",
+        data: data
+      })
+      .done(function(response){
+        console.log(response);
+        updateBlurb("I move " + response.move);
+      })
+      .fail(function(response){
+        alert("Can't make that move!");
+      })
+
+    }
+  }
+
+  var location = function(cell) {
     console.log("location = " + gameBoard.coordinates(cell))
     return gameBoard.coordinates(cell);
   }
 
 
-  var clickCell = function(cell) { 
-    console.log("clicked on cell " + event.target.id);
-    piece = game.activePiece;
-    if(piece && cell.classList.contains("highlight")) {
-      unHighlightTargets(piece);
-      cell.appendChild(piece);
-      game.activePiece = null;
-    }
-  }
 
   game.dragstart = function(event) {
     // game.activePiece = this;
@@ -114,21 +143,23 @@ var runGame = function() {
     cell.appendChild(piece);
   };
 
-  validTargets = function(piece) {
-    var targetList = [];
-    var cell = piece.parentElement;
-    var coordinates = gameBoard.coordinates(cell);
-    for(i in DIRECTIONS) {
-      dir = DIRECTIONS[i];
-      var x = coordinates[0] + dir[0];
-      var y = coordinates[1] + dir[1];
-      var nextCell = gameBoard.cellByCoordinates(x, y);
-      if(nextCell) {
-        targetList.push(nextCell);
-      }
-    }
-    return targetList;
-  }
+
+
+  // validTargets = function(piece) {
+  //   var targetList = [];
+  //   var cell = piece.parentElement;
+  //   var coordinates = gameBoard.coordinates(cell);
+  //   for(i in DIRECTIONS) {
+  //     dir = DIRECTIONS[i];
+  //     var x = coordinates[0] + dir[0];
+  //     var y = coordinates[1] + dir[1];
+  //     var nextCell = gameBoard.cellByCoordinates(x, y);
+  //     if(nextCell) {
+  //       targetList.push(nextCell);
+  //     }
+  //   }
+  //   return targetList;
+  // }
 
   // Create game board
 

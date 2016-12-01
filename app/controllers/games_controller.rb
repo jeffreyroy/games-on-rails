@@ -9,19 +9,32 @@ class GamesController < ApplicationController
     game.export
   end
 
-  def annuvin_drag
+  def annuvin_click
         p "*"*80
     # Get current state of game
     game = Annuvin.new
     p game.current_position
     # game.import
 
-    # Send move to model and get computer move
-    move = game.import_drag(params["move"])
+    # Send piece to model and return list of legal moves
+    legal_moves = game.import_click(params["move"])
     p "*"*80
     # Make computer move
-    blurb = "I move #{move}"
-    render :json => { blurb: blurb }
+    render :json => { moves: legal_moves }
+  end
+
+  def annuvin_drop
+    p "*"*80
+    # Get current state of game
+    game = Annuvin.new
+    p game.current_position
+    # game.import
+
+    # Send piece to model and return list of legal moves
+    move = game.import_drop(params["move"])
+    p "*"*80
+    # Make computer move
+    render :json => { move: move }
   end
 
 end
