@@ -57,6 +57,13 @@ class Annuvin < Game
                         :force_analysis => false }
   end
 
+  # Make a move and update the state
+  def make_move(move)
+    @current_state = next_state(@current_state, move)
+    # Save new state to database
+    export
+  end
+
   # Placeholders to save and restore current state
   def export
     s = SavedGame.first
@@ -159,7 +166,8 @@ class Annuvin < Game
     return false if space[0] < 0 || space[0] > 4
     return false if space[1] < 0 || space[1] > 4
     # Return false if space marked as off limits
-    return false if self.class::INITIAL_BOARD[space[0]][space[1]] =="-"
+    # return false if self.class::INITIAL_BOARD[space[0]][space[1] * 2] == "-"
+    return false if current_position[space[0]][space[1]] == "-"
     # Otherwise return true
     true
   end
@@ -321,7 +329,7 @@ class Annuvin < Game
 
   # Import player's drop
   def import_drop(from_param, to_param, cont)
-
+    # If computer is not in the middle of a move, make player move
     if !cont
       # Integerize move parameter
       from = from_param.map {|c| c.to_i }
@@ -329,15 +337,18 @@ class Annuvin < Game
       p "You seem to be moving to from #{from} to #{to}"
       make_move([from, to])
     end
-    # Get computer move
-    response = best_move(@current_state)
-    puts
-    p "I respond #{response}"
-    make_move(response)
-    p display_position(@current_state)
-    # Save new state
-    export
-    p SavedGame.first.position
+    # If the player is not in the middle of a move, make computer move
+    if !@current_state[:moving_piece]
+      # Get computer move
+      response = best_move(@current_state)
+      puts
+      p "I respond #{response}"
+      make_move(response)
+      # p display_position(@current_state)
+    else
+      # Response to indicate computer is not yet on the move
+      response = [[-1, -1], [-1, -1]]
+    end
     # Send move to client
     response
   end

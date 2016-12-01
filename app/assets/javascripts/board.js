@@ -166,7 +166,6 @@ Grid.prototype.empty = function() {
 };
 
 // Finds cell in Grid by id
-// Can be used to find cell or piece
 Grid.prototype.cellById = function(id) {
   return document.getElementById(id);
 };
@@ -184,6 +183,11 @@ Grid.prototype.coordinates = function(cell) {
   var row = this.rows - number;
   var column = this.LETTERS.indexOf(letter);
   return [column, row]
+};
+
+// Finds pieces in Grid by class
+Grid.prototype.pieceByClass = function(className) {
+  return document.getElementsByClassName(className);
 };
 
 // Helper functions for using cells
@@ -216,6 +220,7 @@ var movePiece = function(pieceImage, destinationCell) {
 //     cell.appendChild(imageNode);
 // }
 
+// Add piece to board and return it
 Grid.prototype.addPiece = function(cellId, piece) {
     cell = document.getElementById(cellId);
     // var src = piece.image;
@@ -224,19 +229,20 @@ Grid.prototype.addPiece = function(cellId, piece) {
     // imageNode.setAttribute("id", piece.id);
     // imageNode.setAttribute("class", "piece");
     // cell.appendChild(imageNode);
+    clearCell(cell);
     cell.appendChild(piece.imageTag());
-
+    return cell.firstChild;
 }
 
 Grid.prototype.addDraggablePiece = function(cellId, piece) {
-    this.addPiece(cellId, piece);
-    pieceNode = document.getElementById(piece.id);
+    pieceNode = this.addPiece(cellId, piece);
+    // pieceNode = document.getElementById(piece.id);
     pieceNode.addEventListener("dragstart", game.dragstart.bind(piece));
 }
 
 Grid.prototype.addClickablePiece = function(cellId, piece) {
-    this.addPiece(cellId, piece);
-    pieceNode = document.getElementById(piece.id);
+    pieceNode = this.addPiece(cellId, piece);
+    // pieceNode = document.getElementById(piece.id);
     pieceNode.addEventListener("click", game.click.bind(piece));
 
 }

@@ -21,7 +21,7 @@ function Piece(name, id) {
 Piece.prototype.imageTag = function() {
     var imageNode = document.createElement("img");
     imageNode.setAttribute("src", image_path(this.image));
-    imageNode.setAttribute("class", "piece");
-    imageNode.setAttribute("id", this.id);
+    imageNode.classList.add("piece");
+    imageNode.classList.add(this.id);
     return imageNode;
 }

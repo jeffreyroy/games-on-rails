@@ -24,7 +24,7 @@ var runGame = function() {
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.id == "BlackK") {
+    if(event.target.classList.contains("BlackK")) {
       clickPiece(cell);
     }
     else {
@@ -38,13 +38,25 @@ var runGame = function() {
     // Convert to smaller board used by server
     loc[1] -= 2;
     data = { move: [loc[1], loc[0]] };
+    // If clicking on active piece
     if(game.activePiece == piece) {
-      game.activePiece = null;
-      unHighlightTargets(piece);
+      // If it's a legal move, submit it
+      if(piece.parentElement.classList.contains("highlight")) {
+
+      }
+      // Otherwise clear active piece
+      else {
+        game.activePiece = null;
+        unHighlightTargets(piece);
+        updateBlurb("Click on a piece to move.");
+      }
     }
+    // Otherwise, activate piece
     else {
       game.activePiece = piece;
       highlightTargets(piece);
+      updateBlurb("Click on highlighted space to move.");
+
     }
 
   }
@@ -86,49 +98,58 @@ var runGame = function() {
   }
 
   var clickCell = function(cell) { 
-    if(cell.id == "WhiteK") { cell = cell.parentElement };
+    if(cell.classList.contains("WhiteK")) { cell = cell.parentElement };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
     // Make sure a piece is ready to move
     if(piece && cell.classList.contains("highlight")) {
       var from = location(piece.parentElement);
       var to = location(cell);
-      // Convert to smaller board
-      from[1] -= 2;
-      to[1] -= 2;
-      data = { from: [from[1], from[0]], to: [to[1], to[0]] };
+ 
       console.log("You seem to be moving from " + data.from + " to " + data.to);
       updateBlurb("Thinking...");
       unHighlightTargets(piece);
       movePiece(piece, cell);
       game.activePiece = null;
       // Perform Ajax call to submit move to server
-      submitMove(data, false);
+      submitMove(from, to, false);
+      // Check to see whether either player has won
+      checkForWin();
+
     }
   }
 
-  var submitMove = function(moveData, cont) {
-      // Perform Ajax call to submit move to server
+  var submitMove = function(from, to, cont) {
+    // Convert to smaller board
+    from[1] -= 2;
+    to[1] -= 2;
+    data = { from: [from[1], from[0]], to: [to[1], to[0]] };
+    // Perform Ajax call to submit move to server
     var done = false;
       $.ajax({
         method: "post",
         url: "annuvin/drop",
-        data: { move: moveData, cont: cont }
+        data: { move: data, cont: cont }
       })
       .done(function(response){
         console.log(response);
         move = response.move;
         cont = response.cont;
-        // Make computer move
-        from = gameBoard.cellByCoordinates(move[0][1], move[0][0] + 2);
-        to = gameBoard.cellByCoordinates(move[1][1], move[1][0] + 2);
-        updateBlurb("I move from " + from.id + " to " + to.id + ".");
-        piece = from.firstChild;
-        movePiece(piece, to);
-        // Continue making additional moves for computer if possible
-        if(cont) {
-          submitMove(moveData, true);
+        // Check whether it is the computer's move
+        if(move[0][0] != -1) {
+          // Make computer move
+          from = gameBoard.cellByCoordinates(move[0][1], move[0][0] + 2);
+          to = gameBoard.cellByCoordinates(move[1][1], move[1][0] + 2);
+          updateBlurb("I move from " + from.id + " to " + to.id + ".");
+          piece = from.firstChild;
+          movePiece(piece, to);
+          // Continue making additional moves for computer if possible
+          if(cont) {
+            submitMove(from, to, true);
+          }
         }
+        // Check to see whether either player has won
+        checkForWin();
       })
       .fail(function(response){
         alert("Can't make that move!");
@@ -139,6 +160,15 @@ var runGame = function() {
   var location = function(cell) {
     console.log("location = " + gameBoard.coordinates(cell))
     return gameBoard.coordinates(cell);
+  }
+
+  var checkForWin = function() {
+    if(lost("BlackK")) { updateBlurb("I win!"); }
+    if(lost("WhiteK")) { updateBlurb("You win!"); }
+  }
+
+  var lost = function(pieceClass) {
+    return gameBoard.pieceByClass(pieceClass).length == 0;
   }
 
 
@@ -179,12 +209,5 @@ var runGame = function() {
   gameBoard.addDraggablePiece("D5", wk);
   gameBoard.addDraggablePiece("E5", wk);
 
-
-  // gameBoard.tableElement().addEventListener("click", gameBoard.click);
-
-  var a = gameBoard.cellById("A1");
-  var b = gameBoard.cellById("BlackK").parentElement;
-
-  console.log(b);
 
 }
