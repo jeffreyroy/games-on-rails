@@ -9,8 +9,9 @@ class GamesController < ApplicationController
     game.export
   end
 
+  # Respond to player clicking on friendly piece
   def annuvin_click
-        p "*"*80
+    p "*"*80
     # Get current state of game
     game = Annuvin.new
     # p game.current_position
@@ -23,6 +24,7 @@ class GamesController < ApplicationController
     render :json => { moves: legal_moves }
   end
 
+  # Respond to player moving a piece
   def annuvin_drop
     p "*"*80
     # Get current state of game

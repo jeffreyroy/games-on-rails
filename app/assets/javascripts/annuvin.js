@@ -4,6 +4,7 @@ $(document).ready(function() {
   
 });
 
+// Update message beneath board
 var updateBlurb = function(string) {
   blurb = document.getElementById("blurb");
   blurb.innerHTML = string;
@@ -12,6 +13,7 @@ var updateBlurb = function(string) {
 var runGame = function() {
   game = new Game();
 
+  // Six directions for hex board
   var DIRECTIONS = {
     e: [0, 1],
     w: [0, -1],
@@ -32,6 +34,7 @@ var runGame = function() {
     }
   };
 
+  // Handle click on a movable piece
   var clickPiece = function(piece) { 
     console.log("clicked on piece " + piece.id);
     var loc = location(piece);
@@ -47,12 +50,13 @@ var runGame = function() {
       // Otherwise clear active piece
       else {
         game.activePiece = null;
-        unHighlightTargets(piece);
+        unHighlightTargets();
         updateBlurb("Click on a piece to move.");
       }
     }
     // Otherwise, activate piece
     else {
+      unHighlightTargets();
       game.activePiece = piece;
       highlightTargets(piece);
       updateBlurb("Click on highlighted space to move.");
@@ -89,7 +93,7 @@ var runGame = function() {
   }
 
   // Remove all highlighting from game board
-  var unHighlightTargets = function(piece) {
+  var unHighlightTargets = function() {
     var targetList = document.getElementsByClassName("highlight");
     while(targetList.length > 0) {
       target = targetList[0];
@@ -97,6 +101,7 @@ var runGame = function() {
     }
   }
 
+  // Handle click on empty cell or enemy piece
   var clickCell = function(cell) { 
     if(cell.classList.contains("WhiteK")) { cell = cell.parentElement };
     console.log("clicked on cell " + cell.id);
@@ -108,7 +113,7 @@ var runGame = function() {
  
       console.log("You seem to be moving from " + data.from + " to " + data.to);
       updateBlurb("Thinking...");
-      unHighlightTargets(piece);
+      unHighlightTargets();
       movePiece(piece, cell);
       game.activePiece = null;
       // Perform Ajax call to submit move to server
@@ -119,6 +124,7 @@ var runGame = function() {
     }
   }
 
+  // Submit player move to server and get AI response
   var submitMove = function(from, to, cont) {
     // Convert to smaller board
     from[1] -= 2;
@@ -162,6 +168,7 @@ var runGame = function() {
     return gameBoard.coordinates(cell);
   }
 
+  // Check for a win
   var checkForWin = function() {
     if(lost("BlackK")) { updateBlurb("I win!"); }
     if(lost("WhiteK")) { updateBlurb("You win!"); }
@@ -172,16 +179,19 @@ var runGame = function() {
   }
 
 
-
+  // Functions to allow dragging and dropping
+  // (Not used in this game)
   game.dragstart = function(event) {
     // game.activePiece = this;
     // event.dataTransfer.setData("text", event.target.id);
-    var piece = event.target;
-    clickPiece(piece);
+    clickPiece(event.target);
   };
 
   game.dragover = function(event) {
     var cell = event.target;
+    if(cell.classList.contains("WhiteK")) {
+      cell = cell.parentElement;
+    }
     if(cell.classList.contains("highlight")) {
       event.preventDefault();
     }
@@ -189,10 +199,7 @@ var runGame = function() {
 
   // This is run when user tries to drop a piece
   game.drop = function(event) {
-    var cell = event.target;
-    var piece = game.activePiece;
-    unHighlightTargets(piece);
-    cell.appendChild(piece);
+    clickCell(event.target);
   };
 
   // Create game board

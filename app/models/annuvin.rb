@@ -35,9 +35,6 @@ class Annuvin < Game
     initialize_ai(0, 100)
   end
 
-
-
-
   def reset
     player = :human
     position = init_board
@@ -149,7 +146,7 @@ class Annuvin < Game
 
   ## 2. Game-specific methods to make moves
 
-  # Vector artihmetic
+  # Vector arithmetic
   def add_vector(vector1, vector2)
     vector1.zip(vector2).map { |x,y| x + y }
   end
@@ -315,6 +312,7 @@ class Annuvin < Game
   end
 
 
+  # 3.  Methods to respond to user input via controller
   # Import player's click
   def import_click(move_param)
     # Integerize move parameter
@@ -353,54 +351,8 @@ class Annuvin < Game
     response
   end
 
-  # Get the player's move and make it
-  def get_move
-    # Fill this in.  Sample code:
-    display_state(@current_state)
-    puts
-    display_position(@current_state)
-    piece_list = get_pieces(@current_state)
-    piece = @current_state[:moving_piece]
-    move = nil
-    while piece == nil
-      print "Your pieces: "
-      p piece_list
-      puts
-      print "Enter piece to move (x, y): "
-      piece_string = gets.chomp
-      piece = piece_string.split(",").map { |x| x.to_i }
-      if piece.length != 2
-        puts "You must enter two coordinates. "
-        piece = nil
-      elsif !piece_list.include?(piece)
-        puts "That's not the location of a piece. "
-        piece = nil
-      end
-    end
-    puts
-    puts "Moving piece at #{piece}."
-    moves_left = total_moves(@current_state)
-    capture_only = @current_state[:moving_piece] != nil
-    puts "Valid move locations: "
-    p get_moves(@current_state, piece, moves_left, capture_only)
 
-    while move == nil
-      print "Enter location to move: "
-      destination_string = gets.chomp
-      destination = destination_string.split(",").map { |x| x.to_i }
-      move = [piece, destination]
-      if destination.length != 2
-        puts "You must enter two coordinates. "
-        move = nil
-      elsif !legal_moves(@current_state).index(move)
-        puts "That's not a legal move!"
-        move = nil
-      end
-    end
-    make_move(move)
-  end
-
-  ## 3. Game-specific methods to determine outcome
+  ## 4. Game-specific methods to determine outcome
 
   # Check whether game is over
   def done?(state)
@@ -428,7 +380,7 @@ class Annuvin < Game
       pieces_left[opponent(player)] == 4 && pieces_left[player] == 1
   end
 
-  ## 4. Game-specific displays
+  ## 5. Game-specific displays
 
   # Display the current position
   def display_position(state)
