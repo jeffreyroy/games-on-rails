@@ -24,7 +24,7 @@ var runGame = function() {
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.tagName == "IMG") {
+    if(event.target.id == "BlackK") {
       clickPiece(cell);
     }
     else {
@@ -37,7 +37,7 @@ var runGame = function() {
     var loc = location(piece);
     // Convert to smaller board used by server
     loc[1] -= 2;
-    data = { move: loc };
+    data = { move: [loc[1], loc[0]] };
     if(game.activePiece == piece) {
       game.activePiece = null;
       unHighlightTargets(piece);
@@ -54,8 +54,9 @@ var runGame = function() {
     var loc = location(piece.parentElement);
     // Convert to smaller board used by server
     loc[1] -= 2;
-    data = { move: loc };
-    console.log(data);
+
+    data = { move: [loc[1], loc[0]] };
+    console.log("That piece seems to be at: " + loc);
     // Perform Ajax call to get list of legal moves from server
     $.ajax({
       method: "post",
@@ -66,7 +67,7 @@ var runGame = function() {
       targetList = response.moves;
       // Highlight targets
       for(i in targetList) {
-        target = gameBoard.cellByCoordinates(targetList[i][0], targetList[i][1] + 2);
+        target = gameBoard.cellByCoordinates(targetList[i][1], targetList[i][0] + 2);
         target.classList.add("highlight");
       }
     })
@@ -85,33 +86,48 @@ var runGame = function() {
   }
 
   var clickCell = function(cell) { 
-    console.log("clicked on cell " + event.target.id);
-    var loc = location(cell);
+    if(cell.id == "WhiteK") { cell = cell.parentElement };
+    console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
     // Make sure a piece is ready to move
     if(piece && cell.classList.contains("highlight")) {
-      loc[1] -= 2;
-      data = { move: loc };
-      console.log(data);
+      var from = location(piece.parentElement);
+      var to = location(cell);
+      // Convert to smaller board
+      from[1] -= 2;
+      to[1] -= 2;
+      data = { from: [from[1], from[0]], to: [to[1], to[0]] };
+      console.log("You seem to be moving from " + data.from + " to " + data.to);
       updateBlurb("Thinking...");
       unHighlightTargets(piece);
-      cell.appendChild(piece);
+      movePiece(piece, cell);
       game.activePiece = null;
+      // Perform Ajax call to submit move to server
+      submitMove(data)
+    }
+  }
+
+  var submitMove = function(moveData) {
       // Perform Ajax call to submit move to server
       $.ajax({
         method: "post",
         url: "annuvin/drop",
-        data: data
+        data: moveData
       })
       .done(function(response){
-        console.log(response);
-        updateBlurb("I move " + response.move);
+        console.log("Response: " + response);
+        move = response.move;
+        from = gameBoard.cellByCoordinates(move[0][1], move[0][0] + 2);
+        to = gameBoard.cellByCoordinates(move[1][1], move[1][0] + 2);
+        updateBlurb("I move from " + from.id + " to " + to.id + ".");
+        piece = from.firstChild;
+        movePiece(piece, to);
+
       })
       .fail(function(response){
         alert("Can't make that move!");
       })
 
-    }
   }
 
   var location = function(cell) {
@@ -143,29 +159,19 @@ var runGame = function() {
     cell.appendChild(piece);
   };
 
-
-
-  // validTargets = function(piece) {
-  //   var targetList = [];
-  //   var cell = piece.parentElement;
-  //   var coordinates = gameBoard.coordinates(cell);
-  //   for(i in DIRECTIONS) {
-  //     dir = DIRECTIONS[i];
-  //     var x = coordinates[0] + dir[0];
-  //     var y = coordinates[1] + dir[1];
-  //     var nextCell = gameBoard.cellByCoordinates(x, y);
-  //     if(nextCell) {
-  //       targetList.push(nextCell);
-  //     }
-  //   }
-  //   return targetList;
-  // }
-
   // Create game board
 
   gameBoard = Grid.generateHex("board", -25, 16, 7, 7, 50, 42);
-  king = new Piece("black king", "BlackK");
-  gameBoard.addDraggablePiece("A1", king);
+  bk = new Piece("black king", "BlackK");
+  wk = new Piece("white king", "WhiteK");
+  gameBoard.addDraggablePiece("A1", bk);
+  gameBoard.addDraggablePiece("B1", bk);
+  gameBoard.addDraggablePiece("C1", bk);
+  gameBoard.addDraggablePiece("D2", bk);
+  gameBoard.addDraggablePiece("B4", wk);
+  gameBoard.addDraggablePiece("C5", wk);
+  gameBoard.addDraggablePiece("D5", wk);
+  gameBoard.addDraggablePiece("E5", wk);
 
 
   // gameBoard.tableElement().addEventListener("click", gameBoard.click);

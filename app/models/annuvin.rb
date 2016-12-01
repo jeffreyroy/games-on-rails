@@ -3,7 +3,7 @@
 require_relative 'game'
 
 class Annuvin < Game
-  attr_reader :current_state
+  attr_reader :current_state, :active_piece
   attr_accessor :minimax
 
   # Number of pieces initially on the board
@@ -94,7 +94,6 @@ class Annuvin < Game
 
   def import
     s = SavedGame.first
-    p "position: " + s.position
     @current_state[:position] = position_string_to_array(s.position)
     player = s.human_to_move ? :human : :computer
     @current_state[:pieces_left] = {
@@ -108,6 +107,8 @@ class Annuvin < Game
     end
     @current_state[:moves_left] = s.moves_left
     @current_state[:force_analysis] = s.force_analysis
+    p s
+    p @current_state
   end
 
   # Initialize 3x3 hex board
@@ -308,28 +309,35 @@ class Annuvin < Game
 
   # Import player's click
   def import_click(move_param)
-    p @current_state
     # Integerize move parameter
     move = move_param.map {|c| c.to_i }
-    p move
+    p "You seem to be moving the piece at #{move}"
     # Return list of legal moves
-    list = get_moves(@current_state, move, @current_state[:moves_left], false)
-    p list
+    list = get_moves(@current_state, move, total_moves(@current_state), false)
+    p "Legal moves for that piece: #{list}"
 
     list
   end
 
   # Import player's drop
-  def import_drop(move_param)
-    p @current_state
-    # Integerize move parameter
-    move = move_param.map {|c| c.to_i }
-    p move
-    make_move(move)
-    # Return computer move
-    response = best_move(@current_state)
-    p response
+  def import_drop(from_param, to_param)
 
+
+    # Integerize move parameter
+    from = from_param.map {|c| c.to_i }
+    to = to_param.map {|c| c.to_i }
+    p "You seem to be moving to from #{from} to #{to}"
+    make_move([from, to])
+    # Get computer move
+    response = best_move(@current_state)
+    puts
+    p "I respond #{response}"
+    make_move(response)
+    p display_position(@current_state)
+    # Save new state
+    export
+    p SavedGame.first.position
+    # Send move to client
     response
   end
 
