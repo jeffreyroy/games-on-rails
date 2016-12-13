@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$('#annuvin').ready(function() {
 
   runGame();
   

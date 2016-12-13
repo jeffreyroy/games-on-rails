@@ -179,7 +179,7 @@ Grid.prototype.cellByCoordinates = function(column, row) {
 Grid.prototype.coordinates = function(cell) {
   var id = cell.id;
   var letter = id[0];
-  var number = id.slice(1);
+  var number = parseInt(id.slice(1, id.length));
   var row = this.rows - number;
   var column = this.LETTERS.indexOf(letter);
   return [column, row]

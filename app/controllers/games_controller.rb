@@ -43,4 +43,8 @@ class GamesController < ApplicationController
     render :json => { move: move, cont: cont }
   end
 
+  def gomoku
+
+  end
+
 end
