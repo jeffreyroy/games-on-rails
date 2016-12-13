@@ -1,5 +1,5 @@
 # require_relative 'monte_carlo'
-require_relative 'minimax'
+# require_relative 'minimax'
 require_relative 'game'
 
 # Simple implementation of gomoku
@@ -21,6 +21,7 @@ class Gomoku < Game
   # Initialize new game
   def initialize
     reset
+    initialize_ai(0, 100)
   end
 
   def reset
@@ -40,6 +41,59 @@ class Gomoku < Game
       :last_move => last_move,
       :outer_bounds => outer_bounds
        }
+  end
+
+    # Placeholders to save and restore current state
+  def export
+    # Temporarily use first database entry for all saves
+    s = GomokuSave.first
+    s.position = @current_state[:position].join
+    s.human_to_move = @current_state[:player] == :human
+    s.human_last_row = @current_state[:last_move][:human][0]
+    s.human_last_column = @current_state[:last_move][:human][1]
+    s.computer_last_row = @current_state[:last_move][:computer][0]
+    s.computer_last_column = @current_state[:last_move][:computer][1]
+    s.top = @current_state[:outer_bounds][:top]
+    s.bottom = @current_state[:outer_bounds][:bottom]
+    s.left = @current_state[:outer_bounds][:left]
+    s.right = @current_state[:outer_bounds][:right]
+    s.save
+  end
+
+  # Parse string representing position and return array
+  def position_string_to_array(string)
+    size = Math.sqrt(string.length).to_i
+    array = chunk(string, size).map { |row| chunk(row, 1) }
+    array
+  end
+
+  # Helper function to split string
+  def chunk(string, size)
+    string.scan(/.{1,#{size}}/)
+  end
+
+
+  def import
+    s = GomokuSave.first
+    @current_state[:position] = position_string_to_array(s.position)
+    @current_state[:player] = s.human_to_move ? :human : :computer
+    @current_state[:last_move][:human][0] = s.human_last_row
+    @current_state[:last_move][:human][1] = s.human_last_column
+    @current_state[:last_move][:computer][0] = s.computer_last_row
+    @current_state[:last_move][:computer][1] = s.computer_last_column
+    @current_state[:outer_bounds][:top] = s.top
+    @current_state[:outer_bounds][:bottom] = s.bottom
+    @current_state[:outer_bounds][:left] = s.left
+    @current_state[:outer_bounds][:right] = s.right
+    p s
+    p @current_state
+  end
+
+  # Make a move and update the state
+  def make_move(move)
+    @current_state = next_state(@current_state, move)
+    # Save new state to database
+    export
   end
 
   # For testing only:  Let player make computer's move
@@ -124,31 +178,56 @@ class Gomoku < Game
     new_state
   end
 
-  # Get the player's move and make it
-  def get_move
-    # Fill this in.  Sample code:
-    puts
-    display_position(@current_state)
-    move = nil
-    until move != nil
-      puts
-      print "Enter your move (x, y): "
-      move_string = gets.chomp
-      move_array = move_string.split(",")
-      if move_array.length != 2
-        puts "You must enter two coordinates."
-      else
-        move = [move_array[1].to_i, move_array[0].to_i]
-      end
-      if !legal_moves(@current_state).index(move)
-        puts "That's not a legal move!"
-        move = nil
-      end
-    end
+
+  # 3.  Methods to respond to user input via controller
+  # Import player's click
+  def import_click(move_param)
+    # Integerize move parameter
+    move = move_param.map {|c| c.to_i }
+    # Make move
+    p "You seem to be moving to #{move}"
     make_move(move)
+    if lost?(@current_state)
+      # If computer has lost, return player as winner
+      return { move: [-1, -1], winner: "player" }
+    else
+      # Otherwise, get computer move
+      response = best_move(@current_state)
+      puts
+      p "I respond #{response}"
+      make_move(response)
+      winner = lost?(@current_state) ? "computer" : "none"
+      # Send move to client
+      { move: response, winner: winner }
+    end
   end
 
-  ## 3. Game-specific methods to determine outcome
+
+  # # Get the player's move and make it
+  # def get_move
+  #   # Fill this in.  Sample code:
+  #   puts
+  #   display_position(@current_state)
+  #   move = nil
+  #   until move != nil
+  #     puts
+  #     print "Enter your move (x, y): "
+  #     move_string = gets.chomp
+  #     move_array = move_string.split(",")
+  #     if move_array.length != 2
+  #       puts "You must enter two coordinates."
+  #     else
+  #       move = [move_array[1].to_i, move_array[0].to_i]
+  #     end
+  #     if !legal_moves(@current_state).index(move)
+  #       puts "That's not a legal move!"
+  #       move = nil
+  #     end
+  #   end
+  #   make_move(move)
+  # end
+
+  ## 4. Game-specific methods to determine outcome
 
   # Check whether game is over
   def done?(state)
@@ -251,41 +330,3 @@ class Gomoku < Game
 
 end
 
-
-# Driver code
-game = Gomoku.new
-minimax = Minimax.new(game, 1)
-# minimax = Montecarlo.new(game, 500, 4)
-game.minimax = minimax
-done = false
-while !done
-  game_over = false
-  while !game_over
-    game.get_move
-    if game.lost?(game.current_state)
-      puts "You win!!"
-      game_over = true
-    elsif game.done?(game.current_state)
-      puts "Cat's game!"
-      game_over = true
-    else
-      game.computer_move
-      if game.lost?(game.current_state)
-        puts "I win!" 
-        game_over = true
-      end
-    end
-  end
-
-  game.display_position(game.current_state)
-  puts
-  print "Play again? (y/n)"
-  again = gets.chomp.downcase
-  if again == "y" 
-    game.reset
-  else
-    done = true
-  end
-end
-
-puts "Thanks for playing!"

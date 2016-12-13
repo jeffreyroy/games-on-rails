@@ -1,3 +1,4 @@
+// Page-specific ready function
 $('#annuvin').ready(function() {
 
   runGame();

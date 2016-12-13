@@ -10,7 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161129035329) do
+ActiveRecord::Schema.define(version: 20161213213857) do
+
+  create_table "annuvin_saves", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "position"
+    t.boolean  "human_to_move"
+    t.integer  "human_pieces_left"
+    t.integer  "computer_pieces_left"
+    t.integer  "moving_piece_row"
+    t.integer  "moving_piece_column"
+    t.integer  "moves_left"
+    t.boolean  "force_analysis"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+  end
+
+  create_table "gomoku_saves", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "position"
+    t.boolean  "human_to_move"
+    t.integer  "human_last_row"
+    t.integer  "human_last_column"
+    t.integer  "computer_last_row"
+    t.integer  "computer_last_column"
+    t.integer  "top"
+    t.integer  "bottom"
+    t.integer  "left"
+    t.integer  "right"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+  end
 
   create_table "saved_games", force: :cascade do |t|
     t.integer  "user_id"

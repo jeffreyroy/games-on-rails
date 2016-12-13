@@ -6,9 +6,19 @@
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
 
+User.delete_all
+AnnuvinSave.delete_all
+GomokuSave.delete_all
+
 User.create( name: "Joe" )
 
-SavedGame.create
 
-g = Annuvin.new
+AnnuvinSave.create
+
+a = Annuvin.new
+a.export
+
+GomokuSave.create
+
+g = Gomoku.new
 g.export

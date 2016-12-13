@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
   # Gomoku
   get 'games/gomoku'
+  post 'games/gomoku/drop' => 'games#gomoku_drop'
 
   get 'welcome/index'
 

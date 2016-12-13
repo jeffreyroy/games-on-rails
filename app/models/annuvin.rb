@@ -63,9 +63,10 @@ class Annuvin < Game
 
   # Placeholders to save and restore current state
   def export
-    s = SavedGame.first
+    # Temporarily use first database entry for all saves
+    s = AnnuvinSave.first
     s.position = @current_state[:position].join
-    s.human_to_move = :player == :human
+    s.human_to_move = @current_state[:player] == :human
     s.human_pieces_left = @current_state[:pieces_left][:human]
     s.computer_pieces_left = @current_state[:pieces_left][:computer]
     if @current_state[:moving_piece]
@@ -97,7 +98,7 @@ class Annuvin < Game
 
 
   def import
-    s = SavedGame.first
+    s = AnnuvinSave.first
     @current_state[:position] = position_string_to_array(s.position)
     player = s.human_to_move ? :human : :computer
     @current_state[:pieces_left] = {

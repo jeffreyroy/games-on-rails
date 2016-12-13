@@ -16,45 +16,51 @@ var runGame = function() {
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    gameBoard.addPiece(cell.id, bk);
+    var move = gameBoard.coordinates(cell);
+    gameBoard.addPiece(cell.id, wk);
+    updateBlurb("Thinking...");
+    submitMove(move);
 
   };
 
 
   // Submit player move to server and get AI response
-  var submitMove = function(from, to, cont) {
-    data = { from: [from[1], from[0]], to: [to[1], to[0]] };
+  var submitMove = function(move) {
+    data = [move[1], move[0]];
     // Perform Ajax call to submit move to server
     var done = false;
       $.ajax({
         method: "post",
-        url: "annuvin/drop",
-        data: { move: data, cont: cont }
+        url: "gomoku/drop",
+        data: { move: data }
       })
       .done(function(response){
-        console.log(response);
-        move = response.move;
-        cont = response.cont;
-        // Check whether it is the computer's move
-        if(move[0][0] != -1) {
-          // Make computer move
-          from = gameBoard.cellByCoordinates(move[0][1], move[0][0]);
-          to = gameBoard.cellByCoordinates(move[1][1], move[1][0]);
-          updateBlurb("I move from " + from.id + " to " + to.id + ".");
-          piece = from.firstChild;
-          movePiece(piece, to);
-          // Continue making additional moves for computer if possible
-          if(cont) {
-            submitMove(from, to, true);
-          }
-        }
-        // Check to see whether either player has won
-        checkForWin();
+        computerMove(response)
       })
       .fail(function(response){
         alert("Can't make that move!");
       })
+  }
 
+  var computerMove = function(response) {
+    console.log(response);
+    move = response.move;
+    winner = response.winner;
+    if(winner == "player") {
+      updateBlurb("You win!");
+    }
+    else {
+      // Make computer move
+      destination = gameBoard.cellByCoordinates(move[1], move[0]);
+      gameBoard.addPiece(destination.id, bk);
+      // Check to see whether computer has won
+      if(winner == "computer") {
+        updateBlurb("I win!")
+      }
+      else {
+        updateBlurb("I move to " + destination.id + ".");
+      }
+    }
   }
 
   var location = function(cell) {
@@ -76,7 +82,7 @@ var runGame = function() {
   gameBoard = Grid.generate("board", 5, 5, 19, 19, 20, 20);
   bk = new Piece("black king", "BlackG");
   wk = new Piece("white king", "WhiteG");
-  gameBoard.addPiece("G9", bk);
+  gameBoard.addPiece("J10", bk);
 
 
 
