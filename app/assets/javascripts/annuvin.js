@@ -38,8 +38,6 @@ var runGame = function() {
   var clickPiece = function(piece) { 
     console.log("clicked on piece " + piece.id);
     var loc = location(piece);
-    // Convert to smaller board used by server
-    loc[1] -= 2;
     data = { move: [loc[1], loc[0]] };
     // If clicking on active piece
     if(game.activePiece == piece) {
@@ -68,8 +66,8 @@ var runGame = function() {
   // get list of valid targets from server
   highlightTargets = function(piece) {
     var loc = location(piece.parentElement);
-    // Convert to smaller board used by server
-    loc[1] -= 2;
+    // // Convert to smaller board used by server
+    // loc[1] -= 2;
 
     data = { move: [loc[1], loc[0]] };
     console.log("That piece seems to be at: " + loc);
@@ -83,7 +81,7 @@ var runGame = function() {
       targetList = response.moves;
       // Highlight targets
       for(i in targetList) {
-        target = gameBoard.cellByCoordinates(targetList[i][1], targetList[i][0] + 2);
+        target = gameBoard.cellByCoordinates(targetList[i][1], targetList[i][0]);
         target.classList.add("highlight");
       }
     })
@@ -126,9 +124,6 @@ var runGame = function() {
 
   // Submit player move to server and get AI response
   var submitMove = function(from, to, cont) {
-    // Convert to smaller board
-    from[1] -= 2;
-    to[1] -= 2;
     data = { from: [from[1], from[0]], to: [to[1], to[0]] };
     // Perform Ajax call to submit move to server
     var done = false;
@@ -144,8 +139,8 @@ var runGame = function() {
         // Check whether it is the computer's move
         if(move[0][0] != -1) {
           // Make computer move
-          from = gameBoard.cellByCoordinates(move[0][1], move[0][0] + 2);
-          to = gameBoard.cellByCoordinates(move[1][1], move[1][0] + 2);
+          from = gameBoard.cellByCoordinates(move[0][1], move[0][0]);
+          to = gameBoard.cellByCoordinates(move[1][1], move[1][0]);
           updateBlurb("I move from " + from.id + " to " + to.id + ".");
           piece = from.firstChild;
           movePiece(piece, to);
@@ -204,7 +199,7 @@ var runGame = function() {
 
   // Create game board
 
-  gameBoard = Grid.generateHex("board", -25, 16, 7, 7, 50, 42);
+  gameBoard = Grid.generateHex("board", 0, 16, 5, 5, 50, 42);
   bk = new Piece("black king", "BlackK");
   wk = new Piece("white king", "WhiteK");
   gameBoard.addDraggablePiece("A1", bk);
