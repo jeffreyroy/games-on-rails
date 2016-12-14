@@ -1,5 +1,5 @@
 body {
-  /*background-color: darkgreen;*/
+  background-color: darkgreen;
 }
 
 
@@ -24,9 +24,27 @@ body {
   margin: auto;
 }
 
+.face {
+  height: 60px;
+  width: 60px;
+}
+
+#blurb-images {
+  display: none;
+}
+
+#blurb-image {
+  display: inline-block;
+}
+
 #blurb {
   font-family: sans-serif;
-  font-size: 2em;
+/*  font-size: 2em;*/
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 1em;
+  display: inline-block;
 }
 
 #gomoku-board {

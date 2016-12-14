@@ -1,6 +1,6 @@
 $('#gomoku').ready(function() {
 
-  runGame();
+  gomoku();
   
 });
 
@@ -10,17 +10,33 @@ var updateBlurb = function(string) {
   blurb.innerHTML = string;
 }
 
-var runGame = function() {
+// Update face
+var updateFace = function(string) {
+  image = $("#" + string);
+  blurbImage = $("#blurb-image img");
+  if(blurbImage) {
+    // Put old face into hidden zone
+    $("#blurb-images").append(blurbImage)
+  }
+  // Put new face in display zone
+  $("#blurb-image").append(image);
+}
+
+var gomoku = function() {
   game = new Game();
 
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    var move = gameBoard.coordinates(cell);
-    gameBoard.addPiece(cell.id, wk);
-    updateBlurb("Thinking...");
-    submitMove(move);
-
+    if(event.target.classList.contains("piece")) {
+      updateBlurb("You can't move there.")
+    }
+    else {
+      var move = gameBoard.coordinates(cell);
+      gameBoard.addPiece(cell.id, wk);
+      updateBlurb("Thinking...");
+      submitMove(move);
+    }
   };
 
 
@@ -48,6 +64,7 @@ var runGame = function() {
     winner = response.winner;
     if(winner == "player") {
       updateBlurb("You win!");
+      updateFace("anguished");
     }
     else {
       // Make computer move
@@ -55,10 +72,12 @@ var runGame = function() {
       gameBoard.addPiece(destination.id, bk);
       // Check to see whether computer has won
       if(winner == "computer") {
-        updateBlurb("I win!")
+        updateBlurb("I win!");
+        updateFace("smiling");
       }
       else {
         updateBlurb("I move to " + destination.id + ".");
+        updateFace("neutral");
       }
     }
   }

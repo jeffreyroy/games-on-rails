@@ -202,31 +202,6 @@ class Gomoku < Game
     end
   end
 
-
-  # # Get the player's move and make it
-  # def get_move
-  #   # Fill this in.  Sample code:
-  #   puts
-  #   display_position(@current_state)
-  #   move = nil
-  #   until move != nil
-  #     puts
-  #     print "Enter your move (x, y): "
-  #     move_string = gets.chomp
-  #     move_array = move_string.split(",")
-  #     if move_array.length != 2
-  #       puts "You must enter two coordinates."
-  #     else
-  #       move = [move_array[1].to_i, move_array[0].to_i]
-  #     end
-  #     if !legal_moves(@current_state).index(move)
-  #       puts "That's not a legal move!"
-  #       move = nil
-  #     end
-  #   end
-  #   make_move(move)
-  # end
-
   ## 4. Game-specific methods to determine outcome
 
   # Check whether game is over
@@ -297,35 +272,6 @@ class Gomoku < Game
     # Fill this in
     player = opponent(state[:player])
     longest_row(state, player) >= 5
-  end
-
-  ## 4. Game-specific displays
-
-  # Display the current position
-  def display_position(state)
-    position = state[:position]
-    puts "  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8"
-    position.each_with_index do |row, i|
-      print i % 10
-      print " " + row.join(" ") + " "
-      puts i % 10
-    end
-    puts "  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8"
-
-    last_move = state[:last_move][:computer]
-    display_computer_move(last_move)
-
-  end
-
-  # Display the computer's move
-  def display_computer_move(move)
-    # Fill this in
-    puts
-    print "Computer just moved to "
-    puts "#{move[1]}, #{move[0]}"
-    puts
-    puts "Your advantage: #{heuristic_score(@current_state)}"
-
   end
 
 end

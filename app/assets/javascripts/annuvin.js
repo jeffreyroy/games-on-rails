@@ -1,7 +1,7 @@
 // Page-specific ready function
 $('#annuvin').ready(function() {
 
-  runGame();
+  annuvin();
   
 });
 
@@ -11,7 +11,7 @@ var updateBlurb = function(string) {
   blurb.innerHTML = string;
 }
 
-var runGame = function() {
+var annuvin = function() {
   game = new Game();
 
   // Six directions for hex board
