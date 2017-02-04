@@ -65,4 +65,27 @@ class GamesController < ApplicationController
     render :json => response
   end
 
+
+  def tictac
+    # Reset game
+    game = Tictac.new
+    game.export
+  end
+
+   # Respond to player moving a piece
+  def tictac_drop
+    p "*"*80
+    # Get current state of game
+    game = Tictac.new
+    game.import
+    p "Drop parameters:"
+    p params
+    # Send move to model and return computer move
+    # Do we need to parse params as json?
+    response = game.import_click(params["move"])
+    p "*"*80
+    # Make computer move
+    render :json => response
+  end
+
 end

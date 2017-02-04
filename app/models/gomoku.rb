@@ -43,7 +43,7 @@ class Gomoku < Game
        }
   end
 
-    # Placeholders to save and restore current state
+  # Placeholders to save and restore current state
   def export
     # Temporarily use first database entry for all saves
     s = GomokuSave.first

@@ -5,12 +5,6 @@ $('#annuvin').ready(function() {
   
 });
 
-// Update message beneath board
-var updateBlurb = function(string) {
-  blurb = document.getElementById("blurb");
-  blurb.innerHTML = string;
-}
-
 var annuvin = function() {
   game = new Game();
 
