@@ -85,20 +85,43 @@ var checkers = function() {
     }
   }
 
-  // Handle click on empty cell or enemy piece
+  // Custom method to move piece, allowing for captures
+  var movePiece = function(pieceImage, destinationCell) {
+    var from = location(piece.parentElement);
+    var to = location(destinationCell);
+    console.log("Moving from " + pieceImage.parentElement.id + " to " + destinationCell.id );
+    // Move piece to destination
+    clearCell(destinationCell);
+    destinationCell.appendChild(pieceImage);
+    // Check for capture
+    console.log ("from " + from[0] + " to " + to[0])
+    var capture = (Math.abs(from[0] - to[0]) == 2)
+    if(capture) {
+      console.log("That's a capture.");
+      // Get square jumped over
+      var intX = (from[0] + to[0]) / 2;
+      var intY = (from[1] + to[1]) / 2;
+      var intCell = gameBoard.cellByCoordinates(intX, intY);
+      console.log("Jumped over " + intCell.id)
+      // Clear captured piece
+      clearCell(intCell);
+    }
+  };
+
+  // Handle click on empty cell
   var clickCell = function(cell) { 
-    if(cell.classList.nodeName == "IMG") { cell = cell.parentElement };
+    // if(cell.classList.nodeName == "IMG") { alert("Space occupied!"); };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
     // Make sure a piece is ready to move
     if(piece && cell.classList.contains("highlight")) {
       var from = location(piece.parentElement);
       var to = location(cell);
- 
-      console.log("You seem to be moving from " + data.from + " to " + data.to);
+      console.log("You seem to be moving from " + from + " to " + to);
       updateBlurb("Thinking...");
       unHighlightTargets();
       movePiece(piece, cell);
+
       game.activePiece = null;
       // Perform Ajax call to submit move to server
       submitMove(from, to, false);
@@ -109,6 +132,8 @@ var checkers = function() {
   }
 
   // Submit player move to server and get AI response
+  // If computer is in middle of series of captures, submit
+  // no move, but set cont to true
   var submitMove = function(from, to, cont) {
     data = { from: [from[1], from[0]], to: [to[1], to[0]] };
     // Perform Ajax call to submit move to server
@@ -145,7 +170,7 @@ var checkers = function() {
   }
 
   var location = function(cell) {
-    console.log("location = " + gameBoard.coordinates(cell))
+    // console.log("location = " + gameBoard.coordinates(cell))
     return gameBoard.coordinates(cell);
   }
 

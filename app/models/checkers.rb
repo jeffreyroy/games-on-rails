@@ -52,14 +52,26 @@ class Checkers < Game
     }
     @current_state[:position].each_with_index do |row, i|
       row.each_with_index do |space, j|
-        if space == "o"
+        case space
+        when "o"
           pieces[:computer] << Man.new(self, [i, j], :computer)
-        elsif space == "O"
+        when "O"
           pieces[:human] << Man.new(self, [i, j], :human)
+        when "k"
+          pieces[:computer] << King.new(self, [i, j], :computer)
+        when "K"
+          pieces[:human] << King.new(self, [i, j], :human)
         end
       end
     end
     @current_state[:pieces] = pieces
+  end
+
+  # Make a move and update the state
+  def make_move(move)
+    @current_state = next_state(@current_state, move)
+    # Save new state to database
+    export
   end
 
   # Placeholders to save and restore current state

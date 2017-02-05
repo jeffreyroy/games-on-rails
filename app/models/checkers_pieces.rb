@@ -104,7 +104,7 @@ end
 
 class Man < CheckersPiece
   # ICON = ["\u26C0", "\u26C2"]
-  ICON = ["\u2659", "\u265F"]
+  ICON = "Oo"
   VALUE = 1
 
   def directions
@@ -116,7 +116,7 @@ end
 
 class King < CheckersPiece
   # ICON = ["\u26C1", "\u26C3"]
-  ICON = ["\u2654", "\u265A"]
+  ICON = "Kk"
   VALUE = 2
 
   def directions
