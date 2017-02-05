@@ -3,7 +3,7 @@ require_relative 'checkers_pieces'
 
 # Classes
 class Checkers < Game
-  attr_reader :current_state
+  attr_reader :current_state, :active_piece
   attr_accessor :minimax
   ## Constants and initialization
 
@@ -281,6 +281,51 @@ class Checkers < Game
  #    end
  #    make_move(move)
  #  end
+
+
+  # 3.  Methods to respond to user input via controller
+  # Import player's click
+  def import_click(move_param)
+    # Integerize move parameter
+    move = move_param.map {|c| c.to_i }
+    p "You seem to be moving the piece at #{move}"
+    piece = @current_state[:pieces][:human].find { |p| p.location == move }
+    if !piece
+      p "There is no piece there!"
+    end
+    # Return list of legal moves
+    list = piece.legal_moves(@current_state)
+    p "Legal moves for that piece: #{list}"
+
+    list
+  end
+
+  # Import player's drop
+  def import_drop(from_param, to_param, cont)
+    # If computer is not in the middle of a move, make player move
+    if !cont
+      # Integerize move parameter
+      from = from_param.map {|c| c.to_i }
+      to = to_param.map {|c| c.to_i }
+      p "You seem to be moving to from #{from} to #{to}"
+      make_move([from, to])
+    end
+    # If the player is not in the middle of a move, make computer move
+    if !@current_state[:moving_piece]
+      # Get computer move
+      response = best_move(@current_state)
+      puts
+      p "I respond #{response}"
+      make_move(response)
+      # p display_position(@current_state)
+    else
+      # Response to indicate computer is not yet on the move
+      response = [[-1, -1], [-1, -1]]
+    end
+    # Send move to client
+    response
+  end
+
 
   ## Methods to determine outcome
 

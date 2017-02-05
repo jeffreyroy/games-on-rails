@@ -8,20 +8,10 @@ $('#checkers').ready(function() {
 var checkers = function() {
   game = new Game();
 
-  // Six directions for hex board
-  var DIRECTIONS = {
-    e: [0, 1],
-    w: [0, -1],
-    ne: [-1, 1],
-    nw: [-1, 0],
-    se: [1, 0],
-    sw: [1, -1]
-  }
-
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.classList.contains("BlackK")) {
+    if(event.target.nodeName == "IMG") {
       clickPiece(cell);
     }
     else {
@@ -75,8 +65,9 @@ var checkers = function() {
     .done(function(response){
       targetList = response.moves;
       // Highlight targets
-      for(i in targetList) {
-        target = gameBoard.cellByCoordinates(targetList[i][1], targetList[i][0]);
+      for(var i=0; i<targetList.length; i++) {
+        console.log(targetList[i][1]);
+        target = gameBoard.cellByCoordinates(targetList[i][1][1], targetList[i][1][0]);
         target.classList.add("highlight");
       }
     })
@@ -96,7 +87,7 @@ var checkers = function() {
 
   // Handle click on empty cell or enemy piece
   var clickCell = function(cell) { 
-    if(cell.classList.contains("WhiteK")) { cell = cell.parentElement };
+    if(cell.classList.nodeName == "IMG") { cell = cell.parentElement };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
     // Make sure a piece is ready to move
@@ -160,8 +151,8 @@ var checkers = function() {
 
   // Check for a win
   var checkForWin = function() {
-    if(lost("BlackK")) { updateBlurb("I win!"); }
-    if(lost("WhiteK")) { updateBlurb("You win!"); }
+    if(lost("scb") && lost("skb")) { updateBlurb("I win!"); }
+    if(lost("scr") && lost("skr")) { updateBlurb("You win!"); }
   }
 
   var lost = function(pieceClass) {
@@ -179,7 +170,7 @@ var checkers = function() {
 
   game.dragover = function(event) {
     var cell = event.target;
-    if(cell.classList.contains("WhiteK")) {
+    if(cell.classList.nodeName == "IMG") {
       cell = cell.parentElement;
     }
     if(cell.classList.contains("highlight")) {
