@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161217032611) do
+ActiveRecord::Schema.define(version: 20170205010901) do
 
   create_table "annuvin_saves", force: :cascade do |t|
     t.integer  "user_id"
@@ -24,6 +24,16 @@ ActiveRecord::Schema.define(version: 20161217032611) do
     t.boolean  "force_analysis"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
+  end
+
+  create_table "checkers_saves", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "position"
+    t.boolean  "human_to_move"
+    t.integer  "moving_piece_row"
+    t.integer  "moving_piece_column"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
   create_table "gomoku_saves", force: :cascade do |t|

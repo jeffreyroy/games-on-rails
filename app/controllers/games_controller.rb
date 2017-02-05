@@ -43,6 +43,48 @@ class GamesController < ApplicationController
     render :json => { move: move, cont: cont }
   end
 
+
+  def checkers
+    # Reset game
+    game = Checkers.new
+    game.export
+  end
+
+  # Respond to player clicking on friendly piece
+  def checkers_click
+    p "*"*80
+    # Get current state of game
+    game = Checkers.new
+    # p game.current_position
+    game.import
+
+    # Send piece to model and return list of legal moves
+    legal_moves = game.import_click(params["move"])
+    p "*"*80
+    # Make computer move
+    render :json => { moves: legal_moves }
+  end
+
+  # Respond to player moving a piece
+  def checkers_drop
+    p "*"*80
+    # Get current state of game
+    game = Checkers.new
+    game.import
+    p "Drop parameters:"
+    p params
+    # Send move to model and return computer move
+    # Do we need to parse params as json?
+    cont = params["cont"] == "true"
+    move_param = params["move"]
+    move = game.import_drop(move_param["from"], move_param["to"], cont)
+    p "*"*80
+    # Make computer move
+    cont = game.current_state[:moving_piece] != nil
+    render :json => { move: move, cont: cont }
+  end
+
+
   def gomoku
     # Reset game
     game = Gomoku.new

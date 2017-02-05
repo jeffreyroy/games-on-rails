@@ -7,6 +7,12 @@ Rails.application.routes.draw do
   post 'games/annuvin/click' => 'games#annuvin_click'
   post 'games/annuvin/drop' => 'games#annuvin_drop'
 
+
+  # Checkers
+  get 'games/checkers'
+  post 'games/checkers/click' => 'games#checkers_click'
+  post 'games/checkers/drop' => 'games#checkers_drop'
+
   # Gomoku
   get 'games/gomoku'
   post 'games/gomoku/drop' => 'games#gomoku_drop'
