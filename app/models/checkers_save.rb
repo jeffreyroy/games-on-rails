@@ -1,0 +1,2 @@
+class CheckersSave < ApplicationRecord
+end

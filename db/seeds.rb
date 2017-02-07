@@ -22,3 +22,13 @@ GomokuSave.create
 
 g = Gomoku.new
 g.export
+
+TictacSave.create
+
+t = Tictac.new
+t.export
+
+CheckersSave.create
+
+t = Checkers.new
+t.export

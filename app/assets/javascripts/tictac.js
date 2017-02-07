@@ -1,11 +1,14 @@
-$('#gomoku').ready(function() {
+$('#tictac').ready(function() {
 
-  gomoku();
+  tictac();
   
 });
 
+const BoardTrans = [[6, 1, 8], [7, 5, 3], [2, 9, 4]]
+const BoardRevTrans = [[-1, -1], [0, 1], [2, 0], [1, 2], [2, 2], [1, 1], [0, 0], [1, 0], [0, 2], [2, 1]]
 
-var gomoku = function() {
+
+var tictac = function() {
   game = new Game();
 
   // Handle click on piece or grid
@@ -15,23 +18,34 @@ var gomoku = function() {
       updateBlurb("You can't move there.")
     }
     else {
-      var move = gameBoard.coordinates(cell);
-      gameBoard.addPiece(cell.id, wk);
+      var move = coordinatesToSpace( gameBoard.coordinates(cell) );
+      // alert("You clicked on " + move);
+      gameBoard.addPiece(cell.id, x);
       updateBlurb("Thinking...");
       submitMove(move);
     }
   };
 
+  var spaceToCoordinates = function(number) {
+    return BoardRevTrans[number];
+
+  }
+
+  var coordinatesToSpace = function(coordinates) {
+    var row = coordinates[0];
+    var column = coordinates[1];
+    return BoardTrans[row][column];
+  }
+
 
   // Submit player move to server and get AI response
   var submitMove = function(move) {
-    data = [move[1], move[0]];
     // Perform Ajax call to submit move to server
     var done = false;
       $.ajax({
         method: "post",
-        url: "gomoku/drop",
-        data: { move: data }
+        url: "tictac/drop",
+        data: { move: move }
       })
       .done(function(response){
         computerMove(response)
@@ -49,10 +63,16 @@ var gomoku = function() {
       updateBlurb("You win!");
       updateFace("anguished");
     }
+    else if(winner == "cat") {
+      updateBlurb("Cat's game!  Refresh to play again.");
+      updateFace("smiling");
+
+    }
     else {
       // Make computer move
-      destination = gameBoard.cellByCoordinates(move[1], move[0]);
-      gameBoard.addPiece(destination.id, bk);
+      var coord = spaceToCoordinates(move);
+      var destination = gameBoard.cellByCoordinates(coord[0], coord[1]);
+      gameBoard.addPiece(destination.id, o);
       // Check to see whether computer has won
       if(winner == "computer") {
         updateBlurb("I win!");
@@ -81,10 +101,10 @@ var gomoku = function() {
 
   // Create game board
 
-  gameBoard = Grid.generate("board", 5, 5, 19, 19, 20, 20);
-  bk = new Piece("black king", "BlackG");
-  wk = new Piece("white king", "WhiteG");
-  gameBoard.addPiece("J10", bk);
+  gameBoard = Grid.generate("board", 5, 5, 3, 3, 120, 120);
+  o = new Piece("o", "o");
+  x = new Piece("x", "x");
+
 
 
 

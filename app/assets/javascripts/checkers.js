@@ -1,27 +1,17 @@
 // Page-specific ready function
-$('#annuvin').ready(function() {
+$('#checkers').ready(function() {
 
-  annuvin();
+  checkers();
   
 });
 
-var annuvin = function() {
+var checkers = function() {
   game = new Game();
-
-  // Six directions for hex board
-  var DIRECTIONS = {
-    e: [0, 1],
-    w: [0, -1],
-    ne: [-1, 1],
-    nw: [-1, 0],
-    se: [1, 0],
-    sw: [1, -1]
-  }
 
   // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.classList.contains("BlackK")) {
+    if(event.target.nodeName == "IMG") {
       clickPiece(cell);
     }
     else {
@@ -69,14 +59,15 @@ var annuvin = function() {
     // Perform Ajax call to get list of legal moves from server
     $.ajax({
       method: "post",
-      url: "annuvin/click",
+      url: "checkers/click",
       data: data
     })
     .done(function(response){
       targetList = response.moves;
       // Highlight targets
-      for(i in targetList) {
-        target = gameBoard.cellByCoordinates(targetList[i][1], targetList[i][0]);
+      for(var i=0; i<targetList.length; i++) {
+        console.log(targetList[i][1]);
+        target = gameBoard.cellByCoordinates(targetList[i][1][1], targetList[i][1][0]);
         target.classList.add("highlight");
       }
     })
@@ -94,20 +85,43 @@ var annuvin = function() {
     }
   }
 
-  // Handle click on empty cell or enemy piece
+  // Custom method to move piece, allowing for captures
+  var movePiece = function(pieceImage, destinationCell) {
+    var from = location(piece.parentElement);
+    var to = location(destinationCell);
+    console.log("Moving from " + pieceImage.parentElement.id + " to " + destinationCell.id );
+    // Move piece to destination
+    clearCell(destinationCell);
+    destinationCell.appendChild(pieceImage);
+    // Check for capture
+    console.log ("from " + from[0] + " to " + to[0])
+    var capture = (Math.abs(from[0] - to[0]) == 2)
+    if(capture) {
+      console.log("That's a capture.");
+      // Get square jumped over
+      var intX = (from[0] + to[0]) / 2;
+      var intY = (from[1] + to[1]) / 2;
+      var intCell = gameBoard.cellByCoordinates(intX, intY);
+      console.log("Jumped over " + intCell.id)
+      // Clear captured piece
+      clearCell(intCell);
+    }
+  };
+
+  // Handle click on empty cell
   var clickCell = function(cell) { 
-    if(cell.classList.contains("WhiteK")) { cell = cell.parentElement };
+    // if(cell.classList.nodeName == "IMG") { alert("Space occupied!"); };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
     // Make sure a piece is ready to move
     if(piece && cell.classList.contains("highlight")) {
       var from = location(piece.parentElement);
       var to = location(cell);
- 
-      console.log("You seem to be moving from " + data.from + " to " + data.to);
+      console.log("You seem to be moving from " + from + " to " + to);
       updateBlurb("Thinking...");
       unHighlightTargets();
       movePiece(piece, cell);
+
       game.activePiece = null;
       // Perform Ajax call to submit move to server
       submitMove(from, to, false);
@@ -118,13 +132,15 @@ var annuvin = function() {
   }
 
   // Submit player move to server and get AI response
+  // If computer is in middle of series of captures, submit
+  // no move, but set cont to true
   var submitMove = function(from, to, cont) {
     data = { from: [from[1], from[0]], to: [to[1], to[0]] };
     // Perform Ajax call to submit move to server
     var done = false;
       $.ajax({
         method: "post",
-        url: "annuvin/drop",
+        url: "checkers/drop",
         data: { move: data, cont: cont }
       })
       .done(function(response){
@@ -154,14 +170,14 @@ var annuvin = function() {
   }
 
   var location = function(cell) {
-    console.log("location = " + gameBoard.coordinates(cell))
+    // console.log("location = " + gameBoard.coordinates(cell))
     return gameBoard.coordinates(cell);
   }
 
   // Check for a win
   var checkForWin = function() {
-    if(lost("BlackK")) { updateBlurb("I win!"); }
-    if(lost("WhiteK")) { updateBlurb("You win!"); }
+    if(lost("scb") && lost("skb")) { updateBlurb("I win!"); }
+    if(lost("scr") && lost("skr")) { updateBlurb("You win!"); }
   }
 
   var lost = function(pieceClass) {
@@ -179,7 +195,7 @@ var annuvin = function() {
 
   game.dragover = function(event) {
     var cell = event.target;
-    if(cell.classList.contains("WhiteK")) {
+    if(cell.classList.nodeName == "IMG") {
       cell = cell.parentElement;
     }
     if(cell.classList.contains("highlight")) {
@@ -194,17 +210,36 @@ var annuvin = function() {
 
   // Create game board
 
-  gameBoard = Grid.generateHex("board", 0, 16, 5, 5, 50, 42);
-  bk = new Piece("black king", "BlackK");
-  wk = new Piece("white king", "WhiteK");
-  gameBoard.addDraggablePiece("A1", bk);
-  gameBoard.addDraggablePiece("B1", bk);
-  gameBoard.addDraggablePiece("C1", bk);
-  gameBoard.addDraggablePiece("D2", bk);
-  gameBoard.addDraggablePiece("B4", wk);
-  gameBoard.addDraggablePiece("C5", wk);
-  gameBoard.addDraggablePiece("D5", wk);
-  gameBoard.addDraggablePiece("E5", wk);
+  gameBoard = Grid.generate("board", 31, 31, 8, 8, 68, 68);
+  bm = new Piece("black man", "scb");
+  wm = new Piece("white man", "scr");
+  bk = new Piece("black king", "skb");
+  wk = new Piece("white king", "skr");
+  gameBoard.addDraggablePiece("A1", bm);
+  gameBoard.addDraggablePiece("C1", bm);
+  gameBoard.addDraggablePiece("E1", bm);
+  gameBoard.addDraggablePiece("G1", bm);
+  gameBoard.addDraggablePiece("B2", bm);
+  gameBoard.addDraggablePiece("D2", bm);
+  gameBoard.addDraggablePiece("F2", bm);
+  gameBoard.addDraggablePiece("H2", bm);
+  gameBoard.addDraggablePiece("A3", bm);
+  gameBoard.addDraggablePiece("C3", bm);
+  gameBoard.addDraggablePiece("E3", bm);
+  gameBoard.addDraggablePiece("G3", bm);
+  gameBoard.addDraggablePiece("B6", wm);
+  gameBoard.addDraggablePiece("D6", wm);
+  gameBoard.addDraggablePiece("F6", wm);
+  gameBoard.addDraggablePiece("H6", wm);
+  gameBoard.addDraggablePiece("A7", wm);
+  gameBoard.addDraggablePiece("C7", wm);
+  gameBoard.addDraggablePiece("E7", wm);
+  gameBoard.addDraggablePiece("G7", wm);
+  gameBoard.addDraggablePiece("B8", wm);
+  gameBoard.addDraggablePiece("D8", wm);
+  gameBoard.addDraggablePiece("F8", wm);
+  gameBoard.addDraggablePiece("H8", wm);
+
 
 
 }
