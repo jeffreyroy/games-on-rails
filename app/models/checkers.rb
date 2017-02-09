@@ -1,6 +1,9 @@
 require_relative 'game'
 require_relative 'checkers_pieces'
 
+## To complete:
+# - Multiple captures by AI
+
 # Classes
 class Checkers < Game
   attr_reader :current_state, :active_piece
@@ -72,6 +75,7 @@ class Checkers < Game
     @current_state = next_state(@current_state, move)
     # Save new state to database
     export
+    p "Current player is now #{@current_state[:player]}"
   end
 
   # Placeholders to save and restore current state
@@ -92,11 +96,8 @@ class Checkers < Game
 
   # Parse string representing position and return array
   def position_string_to_array(string)
-    p string
     size = Math.sqrt(string.length).to_i
-    p size
     array = chunk(string, size).map { |row| chunk(row, 1) }
-    p array
     array
   end
 
@@ -110,14 +111,14 @@ class Checkers < Game
     s = CheckersSave.first
     @current_state[:position] = position_string_to_array(s.position)
     add_pieces
-    player = s.human_to_move ? :human : :computer
+    @current_state[:player] = s.human_to_move ? :human : :computer
     if s.moving_piece_row == -1
       @current_state[:moving_piece] = nil
     else
       @current_state[:moving_piece] = [ s.moving_piece_row, s.moving_piece_column ]
     end
-    p s
-    p @current_state
+    # p s
+    # p @current_state
   end
 
 
@@ -322,8 +323,9 @@ class Checkers < Game
       p "You seem to be moving to from #{from} to #{to}"
       make_move([from, to])
     end
+    p "Current player is now #{@current_state[:player]}"
     # If the player is not in the middle of a move, make computer move
-    if !@current_state[:moving_piece]
+    if @current_state[:player] == :computer
       # Get computer move
       response = best_move(@current_state)
       puts
@@ -331,7 +333,7 @@ class Checkers < Game
       make_move(response)
       # p display_position(@current_state)
     else
-      # Response to indicate computer is not yet on the move
+      # Response to indicate it is still the player's move
       response = [[-1, -1], [-1, -1]]
     end
     # Send move to client

@@ -135,9 +135,9 @@ var checkers = function() {
   // If computer is in middle of series of captures, submit
   // no move, but set cont to true
   var submitMove = function(from, to, cont) {
-    data = { from: [from[1], from[0]], to: [to[1], to[0]] };
+    var data = { from: [from[1], from[0]], to: [to[1], to[0]] };
     // Perform Ajax call to submit move to server
-    var done = false;
+    console.log("Submitting move " + from + "-" + to)
       $.ajax({
         method: "post",
         url: "checkers/drop",
@@ -145,7 +145,7 @@ var checkers = function() {
       })
       .done(function(response){
         console.log(response);
-        move = response.move;
+        var move = response.move;
         cont = response.cont;
         // Check whether it is the computer's move
         if(move[0][0] != -1) {
@@ -157,8 +157,9 @@ var checkers = function() {
           movePiece(piece, to);
           // Continue making additional moves for computer if possible
           if(cont) {
-            submitMove(from, to, true);
+            submitMove([-1,-1], [-1,-1], true);
           }
+
         }
         // Check to see whether either player has won
         checkForWin();
@@ -166,7 +167,6 @@ var checkers = function() {
       .fail(function(response){
         alert("Can't make that move!");
       })
-
   }
 
   var location = function(cell) {
