@@ -85,14 +85,33 @@ var checkers = function() {
     }
   }
 
-  // Custom method to move piece, allowing for captures
+  // Add king of same color as given piece
+  var addKing = function(piece, coordinates) {
+    var cellId = gameBoard.getCellId(coordinates[1], coordinates[0]);
+    console.log(piece.classList);
+    if(piece.classList.contains("scr") || piece.classList.contains("skr")) {
+      gameBoard.addDraggablePiece(cellId, wk);
+    }
+    else {
+      gameBoard.addDraggablePiece(cellId, bk);
+    }
+  }
+
+  // Custom method to move piece, allowing for captures and kings
   var movePiece = function(pieceImage, destinationCell) {
-    var from = location(piece.parentElement);
+    var from = location(pieceImage.parentElement);
     var to = location(destinationCell);
     console.log("Moving from " + pieceImage.parentElement.id + " to " + destinationCell.id );
     // Move piece to destination
     clearCell(destinationCell);
-    destinationCell.appendChild(pieceImage);
+    // If at end of board, add king
+    if(to[1] == 0 || to[1] == 7) {
+      addKing(pieceImage, to);
+      clearCell(pieceImage.parentElement);
+    }
+    else {
+      destinationCell.appendChild(pieceImage);
+    }
     // Check for capture
     console.log ("from " + from[0] + " to " + to[0])
     var capture = (Math.abs(from[0] - to[0]) == 2)
