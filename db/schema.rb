@@ -12,6 +12,9 @@
 
 ActiveRecord::Schema.define(version: 20170205010901) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "annuvin_saves", force: :cascade do |t|
     t.integer  "user_id"
     t.text     "position"

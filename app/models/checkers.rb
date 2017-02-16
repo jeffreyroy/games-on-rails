@@ -361,7 +361,6 @@ class Checkers < Game
     pieces = state[:pieces]
     player = state[:player]
     pieces[player].empty?
-
   end
 
   # ## Displays
