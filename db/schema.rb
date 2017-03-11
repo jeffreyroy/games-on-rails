@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170205010901) do
+ActiveRecord::Schema.define(version: 20170310234147) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,6 +30,16 @@ ActiveRecord::Schema.define(version: 20170205010901) do
   end
 
   create_table "checkers_saves", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "position"
+    t.boolean  "human_to_move"
+    t.integer  "moving_piece_row"
+    t.integer  "moving_piece_column"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
+
+  create_table "chess_saves", force: :cascade do |t|
     t.integer  "user_id"
     t.text     "position"
     t.boolean  "human_to_move"

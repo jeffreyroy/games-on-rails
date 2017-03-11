@@ -9,6 +9,8 @@
 User.delete_all
 AnnuvinSave.delete_all
 GomokuSave.delete_all
+CheckersSave.delete_all
+ChessSave.delete_all
 
 User.create( name: "Joe" )
 
@@ -31,4 +33,9 @@ t.export
 CheckersSave.create
 
 t = Checkers.new
+t.export
+
+ChessSave.create
+
+t = Chess.new
 t.export
