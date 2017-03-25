@@ -115,14 +115,11 @@ class GamesController < ApplicationController
     p "Drop parameters:"
     p params
     # Send move to model and return computer move
-    # Do we need to parse params as json?
-    cont = params["cont"] == "true"
     move_param = params["move"]
-    move = game.import_drop(move_param["from"], move_param["to"], cont)
+    move = game.import_drop(move_param["from"], move_param["to"])
     p "*"*80
     # Make computer move
-    cont = game.current_state[:moving_piece] != nil
-    render :json => { move: move, cont: cont }
+    render :json => { move: move }
   end
 
 

@@ -109,7 +109,7 @@ class Gomoku < Game
     # Get opponent's best formation
     player = opponent(player)
     opponent_score = longest_row(state, player)
-    player_score - opponent_score * 1.1
+    player_score - opponent_score
   end
 
   ## 2. Game-specific methods to make moves

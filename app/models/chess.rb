@@ -1,13 +1,21 @@
+# require_relative 'minimax'
 require_relative 'game'
 require_relative 'chess_pieces'
+# require 'pry'
 
-## To complete:
-# - Multiple captures by AI
+## To do:
+# Check and Checkmate (temporarily disabled for speed)
+# Pawn promotion (done)
+# Castling
+# En passant
+# Opening book
+# Put next_state into pieces rather than game?
 
 # Classes
 class Chess < Game
-  attr_reader :current_state, :active_piece
+  attr_reader :current_state
   attr_accessor :minimax
+
   ## Constants and initialization
 
   COLUMNS = "abcdefgh"
@@ -17,66 +25,65 @@ class Chess < Game
     position = Array.new(8) { Array.new(8, ".") }
     player = :human
     pieces = { human: [], computer: [] }
-    # State is a hash consisting of the current position and the
-    # Player currently to move
     # Initialize empty board
-    @current_state = { 
+    @current_state = {
       :position => position,
-      :player => player, 
+      :player => player,
       :pieces => pieces,
-      :moving_piece => nil
-       }
+      :check => false,
+      :force_analysis => false
+    }
     # Add pieces to empty board
-    init_position
     add_pieces
     # Intialize ai
-    initialize_ai(0, 100)
+    initialize_ai(0, 1000)
+    @max_force_depth = 3
   end
 
   # Add initial piece setup to board
-  def init_position
-    position = @current_state[:position]
-    position[0] = " o o o o".split("")
-    position[1] = "o o o o ".split("")
-    position[2] = " o o o o".split("")
-    position[3] = ". . . . ".split("")
-    position[4] = " . . . .".split("")
-    position[5] = "O O O O ".split("")
-    position[6] = " O O O O".split("")
-    position[7] = "O O O O ".split("")
-    @current_state[:position] = position
+  def add_pieces
+    # Add major pieces
+    @current_state[:pieces] = {
+      :human => [ Rook.new(self, [7, 0], :human),
+                  Rook.new(self, [7, 7], :human),
+                  Bishop.new(self, [7, 2], :human),
+                  Bishop.new(self, [7, 5], :human),
+                  Knight.new(self, [7, 1], :human),
+                  Knight.new(self, [7, 6], :human),
+                  ChessKing.new(self, [7, 4], :human),
+                  Queen.new(self, [7, 3], :human)
+                   ],
+      :computer => [ Rook.new(self, [0, 0], :computer),
+                  Rook.new(self, [0, 7], :computer),
+                  Bishop.new(self, [0, 2], :computer),
+                  Bishop.new(self, [0, 5], :computer),
+                  Knight.new(self, [0, 1], :computer),
+                  Knight.new(self, [0, 6], :computer),
+                  ChessKing.new(self, [0, 4], :computer),
+                  Queen.new(self, [0, 3], :computer)
+                ]
+
+    }
+
+    # Add pawns
+    (0..7).each do |column|
+      @current_state[:pieces][:human] << Pawn.new(self, [6, column], :human)
+      @current_state[:pieces][:computer] << Pawn.new(self, [1, column], :computer)
+    end
+    add_icons
   end
 
-  def add_pieces
-    # Add chess
-    pieces= {
-      :human => [ ],
-      :computer => [ ]
-    }
-    @current_state[:position].each_with_index do |row, i|
-      row.each_with_index do |space, j|
-        case space
-        when "o"
-          pieces[:computer] << ChessPawn.new(self, [i, j], :computer)
-        when "O"
-          pieces[:human] << ChessPawn.new(self, [i, j], :human)
-        when "k"
-          pieces[:computer] << ChessKing.new(self, [i, j], :computer)
-        when "K"
-          pieces[:human] << ChessKing.new(self, [i, j], :human)
-        end
+  # Add piece icons to board
+  def add_icons
+    [:human, :computer].each do |player|
+      @current_state[:pieces][player].each do |piece|
+        row = piece.location[0]
+        column = piece.location[1]
+        @current_state[:position][row][column] = piece.icon
       end
     end
-    @current_state[:pieces] = pieces
   end
 
-  # Make a move and update the state
-  def make_move(move)
-    @current_state = next_state(@current_state, move)
-    # Save new state to database
-    export
-    p "Current player is now #{@current_state[:player]}"
-  end
 
   # Placeholders to save and restore current state
   def export
@@ -84,13 +91,6 @@ class Chess < Game
     s = ChessSave.first
     s.position = @current_state[:position].join
     s.human_to_move = @current_state[:player] == :human
-    if @current_state[:moving_piece]
-      s.moving_piece_row = @current_state[:moving_piece][0]
-      s.moving_piece_column = @current_state[:moving_piece][1]
-    else
-      s.moving_piece_row = -1
-      s.moving_piece_column = -1
-    end
     s.save
   end
 
@@ -112,20 +112,8 @@ class Chess < Game
     @current_state[:position] = position_string_to_array(s.position)
     add_pieces
     @current_state[:player] = s.human_to_move ? :human : :computer
-    if s.moving_piece_row == -1
-      @current_state[:moving_piece] = nil
-    else
-      @current_state[:moving_piece] = [ s.moving_piece_row, s.moving_piece_column ]
-    end
-    # p s
-    # p @current_state
   end
 
-
-  # Return row at which player's men become kings
-  def end_row(player)
-    player == :human ? 0 : 7
-  end
 
   def total_value(piece_list)
     # return 0 if piece_list.empty?
@@ -139,22 +127,44 @@ class Chess < Game
     total_value(pieces[player]) - total_value(pieces[opponent(player)])
   end
 
+  # Return row at which player's pawns promote
+  def end_row(player)
+    player == :human ? 0 : 7
+  end
+
   def force_analysis(state)
-    !!state[:moving_piece]
+    state[:force_analysis] && @depth < @max_force_depth
   end
 
   ## Methods to make moves
 
-  # Moved this to piece
-  # def inbounds(destination)
-  #   row = destination[0]
-  #   column = destination[1]
-  #   row >= 0 && row <= 7 && column >= 0 && column <= 7
-  # end
+  # Find a player's king
+  def get_king(state, player)
+    pieces = state[:pieces][player]
+    pieces.find { |piece| piece.class == ChessKing }
+  end
 
-  # Legal moves for minimax algorithm
-  def legal_moves(state)
-    position = state[:position]
+  # Test whether opponent is in check
+  def check?(state)
+    player = state[:player]
+    king = get_king(state, opponent(player))
+    # Look for a move that can capture the king
+    checking_move = king && pre_check_legal_moves(state).find {
+      |move| move[1] == king.location
+    }
+    !!checking_move
+  end
+
+  # Check whether a destination is on the board
+  def inbounds(destination)
+    row = destination[0]
+    column = destination[1]
+    row >= 0 && row <= 7 && column >= 0 && column <= 7
+  end
+
+  # Generate list of moves, not taking account of whether
+  # Player is left in check
+  def pre_check_legal_moves(state)
     player = state[:player]
     piece_list = state[:pieces][player]
     move_list = []
@@ -165,53 +175,76 @@ class Chess < Game
     move_list
   end
 
-  # Given position and move, return resulting position
+  # Get list of legal moves in given state
+  # for minimax algorithm
+  def legal_moves(state)
+    move_list = pre_check_legal_moves(state)
+    # # Eliminate moves which leave player in check
+    # # move_list.delete_if { |move| check?(next_state(state, move)) }
+    # move_list.each do |move| 
+    #   if check?(next_state(state, move))
+    #     print "."
+    #     move_list.delete(move)
+    #   end
+    # end
+    move_list
+  end
+
+  # Given state and move, return resulting state
   def next_state(state, move)
+    # Deep copy position (is this the easiest way?)
     position = Marshal.load(Marshal.dump(state[:position]))
     player = state[:player]
     opp = opponent(player)
-    # Change this: Don't want to deep copy each piece here!
     pieces = Marshal.load(Marshal.dump(state[:pieces]))
     from = move[0]
     to = move[1]
-    moving_piece = nil
-    current_piece = pieces[player].find { |piece| piece.location == from }
-    if !current_piece
+    force_analysis = false
+    check = false
+    moving_piece = pieces[player].find { |piece| piece.location == from }
+    if !moving_piece
       puts "ERROR--no piece to move!"
     end
     # Check for capture
-    if (from[0] - to[0]).abs == 2
+    if position[to[0]][to[1]] != "."
       # Remove enemy piece
-      captured_location = [0,0]
-      captured_location[0] = (from[0] + to[0]) / 2
-      captured_location[1] = (from[1] + to[1]) / 2
-      pieces[opp].delete_if { |piece| piece.location == captured_location }
-      position[captured_location[0]][captured_location[1]] = "."
-      moving_piece = to
+      pieces[opp].delete_if { |piece| piece.location == to }
+      # Force AI to continue analysis
+      force_analysis = true
+    end
+    # Check for promotion
+    if moving_piece.class == Pawn && to[0] == end_row(player)
+      # Replace pawn with queen
+      # (Underpromotion not yet implemented)
+      pieces[player].delete(moving_piece)
+      moving_piece = Queen.new(self, to, player)
+      pieces[player] << moving_piece
     end
     # Move piece
     position[from[0]][from[1]] = "."
-    # If at end row, turn man into king
-    if to[0] == end_row(player)
-      pieces[player].delete(current_piece)
-      current_piece = ChessKing.new(self, from, player)
-      pieces[player] << current_piece
-    end
-    position[to[0]][to[1]] = current_piece.icon
-    current_piece.location = to
-    # If not in middle of series of captures, switch active player
-    next_player = moving_piece ? player : opp
-    update_state = { :position => position,
+    position[to[0]][to[1]] = moving_piece.icon
+    moving_piece.location = to
+    # Switch active player
+    next_player = opp
+    # # Create new state for testing whether king is in check
+    # new_position_state = {
+    #   :position => position,
+    #   :player => player,
+    #   :pieces => pieces,
+    #   :check => false,
+    #   :force_analysis => false
+    # }
+    # # Test whether opponent's king is now in check
+    # check = check?(new_position_state)
+    # force_analysis = true if check
+    # Return new state
+    {
+      :position => position,
       :player => next_player,
       :pieces => pieces,
-      :moving_piece => moving_piece
+      :check => check,
+      :force_analysis => force_analysis
     }
-    # If no more captures, end player's move
-    if moving_piece && current_piece.generate_captures(update_state).empty?
-      update_state[:moving_piece] = nil
-      update_state[:player] = opp
-    end
-    update_state
   end
 
   # Interpret algebraic notation as coordinates
@@ -233,68 +266,6 @@ class Chess < Game
     column + row
   end
 
-  # For testing - get piece at location
-  def get_piece(location_string)
-    location = coordinates(location_string)
-    pieces = @current_state[:pieces]
-    piece = pieces[:human].find { |piece| piece.location == location }
-    if !piece
-      piece = pieces[:computer].find { |piece| piece.location == location }
-    end
-    piece
-  end
-
-  # For testing - print legal moves for piece at location
-  def print_moves(location_string)
-    piece = get_piece(location_string)
-    if piece
-      p piece.legal_moves(@current_state).map { |move| algebraic(move[1]) }
-    else
-      "No piece there. "
-    end
-  end
-
- # # Get the player's move and make it
- #  def get_move
-
- #    # Fill this in.  Sample code:
- #    puts
- #    display_position
- #    position = @current_state[:position]
- #    piece_list = @current_state[:pieces][:human]
- #    # print "Your pieces: "
- #    # puts piece_list.map { |piece| "#{piece.icon} at #{piece.location}"}
- #    move = nil
- #    while move == nil
- #      puts
- #      print "Enter move in algebraic notation: "
- #      move_labels = gets.chomp.split("-")
- #      if move_labels.length != 2 || move_labels[0].length != 2 || move_labels[1].length != 2
- #        puts "I don't understand that move."
- #        puts "Please use algebraic notation, e.g. 'e2-e4'."
- #      else
- #        from = coordinates(move_labels[0])
- #        to = coordinates(move_labels[1])
- #        if !from
- #          puts "I don't understand #{move_labels[0]} as a position."
- #        elsif !to
- #          puts "I don't understand #{move_labels[1]} as a position."
- #        else
- #          piece = @current_state[:pieces][:human].find { |p| p.location == from }
- #          if !piece
- #            puts "You have no piece at #{move_labels[0]}"
- #          elsif !piece.legal_moves(@current_state).include?([from, to])
- #            puts "That's not a legal destination."
- #            puts
- #          else
- #            move = [from, to]
- #          end
- #        end
- #      end
- #    end
- #    make_move(move)
- #  end
-
 
   # 3.  Methods to respond to user input via controller
   # Import player's click
@@ -314,28 +285,20 @@ class Chess < Game
   end
 
   # Import player's drop
-  def import_drop(from_param, to_param, cont)
-    # If computer is not in the middle of a move, make player move
-    if !cont
-      # Integerize move parameter
-      from = from_param.map {|c| c.to_i }
-      to = to_param.map {|c| c.to_i }
-      p "You seem to be moving to from #{from} to #{to}"
-      make_move([from, to])
-    end
+  def import_drop(from_param, to_param)
+    # Make player move
+    # Integerize move parameter
+    from = from_param.map {|c| c.to_i }
+    to = to_param.map {|c| c.to_i }
+    p "You seem to be moving to from #{from} to #{to}"
+    make_move([from, to])
     p "Current player is now #{@current_state[:player]}"
-    # If the player is not in the middle of a move, make computer move
-    if @current_state[:player] == :computer
-      # Get computer move
-      response = best_move(@current_state)
-      puts
-      p "I respond #{response}"
-      make_move(response)
-      # p display_position(@current_state)
-    else
-      # Response to indicate it is still the player's move
-      response = [[-1, -1], [-1, -1]]
-    end
+    # Make computer move
+    response = best_move(@current_state)
+    puts
+    p "I respond #{response}"
+    make_move(response)
+    # p display_position(@current_state)
     # Send move to client
     response
   end
@@ -353,35 +316,20 @@ class Chess < Game
   def won?(state)
     pieces = state[:pieces]
     player = opponent(state[:player])
-    pieces[player].empty?
+    # pieces[player].empty?
+    king = pieces[player].find { |piece| piece.class == ChessKing }
+    !king
   end
 
   # Check whether game has been lost by player to move
   def lost?(state)
     pieces = state[:pieces]
     player = state[:player]
-    pieces[player].empty?
+    # pieces[player].empty?
+    king = pieces[player].find { |piece| piece.class == ChessKing }
+    !king
   end
 
-  # ## Displays
-
-  # # Print the entire board (only works for current position)
-  # def display_position
-  #   side = " \u2551"
-  #   puts " \u2554" + "\u2550" * 16 + "\u2557"
-  #   current_position.each do |row|
-  #     row_string = row.join(" ")
-  #     puts side + row_string + side
-  #   end
-  #   puts " \u255A" + "\u2550" * 16 + "\u255D"
-  # end
-
-  # def display_computer_move(move)
-  #   puts "I move #{algebraic(move[0])}-#{algebraic(move[1])}"
-  # end
-
 end
-
-
 
 

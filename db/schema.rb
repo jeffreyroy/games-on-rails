@@ -43,10 +43,10 @@ ActiveRecord::Schema.define(version: 20170310234147) do
     t.integer  "user_id"
     t.text     "position"
     t.boolean  "human_to_move"
-    t.integer  "moving_piece_row"
-    t.integer  "moving_piece_column"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.boolean  "check"
+    t.boolean  "force_analysis"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
   end
 
   create_table "gomoku_saves", force: :cascade do |t|

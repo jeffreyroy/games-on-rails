@@ -4,8 +4,9 @@ class CreateChessSaves < ActiveRecord::Migration[5.0]
       t.integer :user_id
       t.text :position
       t.boolean :human_to_move
-      t.integer :moving_piece_row
-      t.integer :moving_piece_column
+      t.boolean :check
+      t.boolean :force_analysis
+
       t.timestamps
     end
   end
