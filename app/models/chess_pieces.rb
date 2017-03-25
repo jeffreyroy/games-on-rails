@@ -106,25 +106,25 @@ end
 
 class Rook < StraightMover
   # Icon represented in unicode
-  ICON = ["\u2656", "\u265C"]
+  ICON = "Rr"
   VALUE = 5
   DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 end
 
 class Bishop < StraightMover
-  ICON = ["\u2657", "\u265D"]
+  ICON = "Bb"
   VALUE = 3
   DIRECTIONS = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
 end
 
 class Queen < StraightMover
-  ICON = ["\u2655", "\u265B"]
+  ICON = "Qq"
   VALUE = 9
   DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
 end
 
 class ChessKing < ChessPiece
-  ICON = ["\u2654", "\u265A"]
+  ICON = "Kk"
   VALUE = 50
   DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
   def legal_moves(state)
@@ -150,7 +150,7 @@ class ChessKing < ChessPiece
 end
 
 class Knight < ChessPiece
-  ICON = ["\u2658", "\u265E"]
+  ICON = "Nn"
   VALUE = 3
   DIRECTIONS = [[1, 2], [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, -1], [-2, 1]]
   def legal_moves(state)
@@ -176,7 +176,7 @@ end
 
 
 class Pawn < ChessPiece
-  ICON = ["\u2659", "\u265F"]
+  ICON = "Pp"
   VALUE = 1
 
   def direction

@@ -20,11 +20,15 @@ class Chess < Game
 
   COLUMNS = "abcdefgh"
   ROWS = "87654321"
+  SETUP = "rnbqkbnr" + "pppppppp" + "." * 32 + "PPPPPPPP" + "RNBQKBNR"
 
   def initialize
-    position = Array.new(8) { Array.new(8, ".") }
+    position = position_string_to_array(self.class::SETUP)
     player = :human
-    pieces = { human: [], computer: [] }
+    pieces= {
+      :human => [ ],
+      :computer => [ ]
+    }
     # Initialize empty board
     @current_state = {
       :position => position,
@@ -33,44 +37,51 @@ class Chess < Game
       :check => false,
       :force_analysis => false
     }
-    # Add pieces to empty board
     add_pieces
     # Intialize ai
     initialize_ai(0, 1000)
     @max_force_depth = 3
+    display_position
   end
 
-  # Add initial piece setup to board
   def add_pieces
-    # Add major pieces
-    @current_state[:pieces] = {
-      :human => [ Rook.new(self, [7, 0], :human),
-                  Rook.new(self, [7, 7], :human),
-                  Bishop.new(self, [7, 2], :human),
-                  Bishop.new(self, [7, 5], :human),
-                  Knight.new(self, [7, 1], :human),
-                  Knight.new(self, [7, 6], :human),
-                  ChessKing.new(self, [7, 4], :human),
-                  Queen.new(self, [7, 3], :human)
-                   ],
-      :computer => [ Rook.new(self, [0, 0], :computer),
-                  Rook.new(self, [0, 7], :computer),
-                  Bishop.new(self, [0, 2], :computer),
-                  Bishop.new(self, [0, 5], :computer),
-                  Knight.new(self, [0, 1], :computer),
-                  Knight.new(self, [0, 6], :computer),
-                  ChessKing.new(self, [0, 4], :computer),
-                  Queen.new(self, [0, 3], :computer)
-                ]
-
+    # Add pieces
+    pieces= {
+      :human => [ ],
+      :computer => [ ]
     }
+    @current_state[:position].each_with_index do |row, i|
+      row.each_with_index do |space, j|
+        case space
+        when "k"
+          pieces[:computer] << ChessKing.new(self, [i, j], :computer)
+        when "K"
+          pieces[:human] << ChessKing.new(self, [i, j], :human)
+        when "q"
+          pieces[:computer] << Queen.new(self, [i, j], :computer)
+        when "Q"
+          pieces[:human] << Queen.new(self, [i, j], :human)
+        when "r"
+          pieces[:computer] << Rook.new(self, [i, j], :computer)
+        when "R"
+          pieces[:human] << Rook.new(self, [i, j], :human)
+        when "b"
+          pieces[:computer] << Bishop.new(self, [i, j], :computer)
+        when "B"
+          pieces[:human] << Bishop.new(self, [i, j], :human)
+        when "n"
+          pieces[:computer] << Knight.new(self, [i, j], :computer)
+        when "N"
+          pieces[:human] << Knight.new(self, [i, j], :human)
+        when "p"
+          pieces[:computer] << Pawn.new(self, [i, j], :computer)
+        when "P"
+          pieces[:human] << Pawn.new(self, [i, j], :human)
 
-    # Add pawns
-    (0..7).each do |column|
-      @current_state[:pieces][:human] << Pawn.new(self, [6, column], :human)
-      @current_state[:pieces][:computer] << Pawn.new(self, [1, column], :computer)
+        end
+      end
     end
-    add_icons
+    @current_state[:pieces] = pieces
   end
 
   # Add piece icons to board
@@ -113,6 +124,14 @@ class Chess < Game
     add_pieces
     @current_state[:player] = s.human_to_move ? :human : :computer
   end
+
+  # Make a move and update the state
+  def make_move(move)
+    @current_state = next_state(@current_state, move)
+    # Save new state to database
+    export
+  end
+
 
 
   def total_value(piece_list)
@@ -275,7 +294,9 @@ class Chess < Game
     p "You seem to be moving the piece at #{move}"
     piece = @current_state[:pieces][:human].find { |p| p.location == move }
     if !piece
-      p "There is no piece there!"
+      p "There is no piece there:"
+      display_position
+      p @current_state[:pieces][:human]
     end
     # Return list of legal moves
     list = piece.legal_moves(@current_state)
@@ -293,6 +314,8 @@ class Chess < Game
     p "You seem to be moving to from #{from} to #{to}"
     make_move([from, to])
     p "Current player is now #{@current_state[:player]}"
+
+    display_position
     # Make computer move
     response = best_move(@current_state)
     puts
@@ -328,6 +351,24 @@ class Chess < Game
     # pieces[player].empty?
     king = pieces[player].find { |piece| piece.class == ChessKing }
     !king
+  end
+
+
+  ## Displays
+
+  # Print the entire board (only works for current position)
+  def display_position
+    side = " \u2551"
+    puts " \u2554" + "\u2550" * 16 + "\u2557"
+    current_position.each do |row|
+      row_string = row.join(" ")
+      puts side + row_string + side
+    end
+    puts " \u255A" + "\u2550" * 16 + "\u255D"
+    if @current_state[:check]
+      puts
+      puts "Check!"
+    end
   end
 
 end

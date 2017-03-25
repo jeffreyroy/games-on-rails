@@ -165,7 +165,6 @@ var chess = function() {
       .done(function(response){
         console.log(response);
         var move = response.move;
-        cont = response.cont;
         // Check whether it is the computer's move
         if(move[0][0] != -1) {
           // Make computer move
@@ -174,10 +173,6 @@ var chess = function() {
           updateBlurb("I move from " + from.id + " to " + to.id + ".");
           piece = from.firstChild;
           movePiece(piece, to);
-          // Continue making additional moves for computer if possible
-          if(cont) {
-            submitMove([-1,-1], [-1,-1], true);
-          }
 
         }
         // Check to see whether either player has won
