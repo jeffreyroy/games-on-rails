@@ -9,9 +9,11 @@ var chess = function() {
   game = new Game();
 
   // Handle click on piece or grid
+  // Need to check whether clicking on white or black piece
+  // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.nodeName == "IMG") {
+    if(event.target.classList.contains("white")) {
       clickPiece(cell);
     }
     else {
@@ -85,15 +87,15 @@ var chess = function() {
     }
   }
 
-  // Add king of same color as given piece
-  var addKing = function(piece, coordinates) {
+  // Add queen of same color as promoting pawn
+  var addQueen = function(piece, coordinates) {
     var cellId = gameBoard.getCellId(coordinates[1], coordinates[0]);
     console.log(piece.classList);
-    if(piece.classList.contains("scr") || piece.classList.contains("skr")) {
-      gameBoard.addDraggablePiece(cellId, wk);
+    if(piece.classList.contains("white")) {
+      gameBoard.addDraggablePiece(cellId, wq);
     }
     else {
-      gameBoard.addDraggablePiece(cellId, bk);
+      gameBoard.addDraggablePiece(cellId, bq);
     }
   }
 
@@ -104,31 +106,21 @@ var chess = function() {
     console.log("Moving from " + pieceImage.parentElement.id + " to " + destinationCell.id );
     // Move piece to destination
     clearCell(destinationCell);
-    // If at end of board, add king
-    if(to[1] == 0 || to[1] == 7) {
-      addKing(pieceImage, to);
+    // If at end of board, promote pawn
+    if(pieceImage.classList.contains("pawn") &&
+      (to[1] == 0 || to[1] == 7)) {
+      addQueen(pieceImage, to);
       clearCell(pieceImage.parentElement);
     }
     else {
       destinationCell.appendChild(pieceImage);
     }
-    // Check for capture
-    console.log ("from " + from[0] + " to " + to[0])
-    var capture = (Math.abs(from[0] - to[0]) == 2)
-    if(capture) {
-      console.log("That's a capture.");
-      // Get square jumped over
-      var intX = (from[0] + to[0]) / 2;
-      var intY = (from[1] + to[1]) / 2;
-      var intCell = gameBoard.cellByCoordinates(intX, intY);
-      console.log("Jumped over " + intCell.id)
-      // Clear captured piece
-      clearCell(intCell);
-    }
+
   };
 
   // Handle click on empty cell
   var clickCell = function(cell) { 
+    if(cell.classList.contains("black")) { cell = cell.parentElement };
     // if(cell.classList.nodeName == "IMG") { alert("Space occupied!"); };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;

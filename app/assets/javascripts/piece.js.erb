@@ -23,5 +23,9 @@ Piece.prototype.imageTag = function() {
     imageNode.setAttribute("src", image_path(this.image));
     imageNode.classList.add("piece");
     imageNode.classList.add(this.id);
+    var nameArray = this.name.split(" ");
+    for(var i=0; i<nameArray.length; i++) {
+        imageNode.classList.add(nameArray[i]);
+      }
     return imageNode;
 }
