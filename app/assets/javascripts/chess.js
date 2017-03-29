@@ -182,8 +182,8 @@ var chess = function() {
 
   // Check for a win
   var checkForWin = function() {
-    if(lost("scb") && lost("skb")) { updateBlurb("I win!"); }
-    if(lost("scr") && lost("skr")) { updateBlurb("You win!"); }
+    if(lost("white-king")) { updateBlurb("I win!"); }
+    if(lost("black-king")) { updateBlurb("You win!"); }
   }
 
   var lost = function(pieceClass) {
