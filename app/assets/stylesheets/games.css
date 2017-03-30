@@ -29,6 +29,11 @@ body {
   width: 60px;
 }
 
+#bigchess {
+  height: 804px;
+  width: 804px;
+}
+
 #blurb-images {
   display: none;
 }

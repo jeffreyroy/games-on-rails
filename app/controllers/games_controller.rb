@@ -85,6 +85,44 @@ class GamesController < ApplicationController
   end
 
 
+  def chess
+    # Reset game
+    game = Chess.new
+    game.export
+  end
+
+  # Respond to player clicking on friendly piece
+  def chess_click
+    p "*"*80
+    # Get current state of game
+    game = Chess.new
+    # p game.current_position
+    game.import
+
+    # Send piece to model and return list of legal moves
+    legal_moves = game.import_click(params["move"])
+    p "*"*80
+    # Make computer move
+    render :json => { moves: legal_moves }
+  end
+
+  # Respond to player moving a piece
+  def chess_drop
+    p "*"*80
+    # Get current state of game
+    game = Chess.new
+    game.import
+    p "Drop parameters:"
+    p params
+    # Send move to model and return computer move
+    move_param = params["move"]
+    move = game.import_drop(move_param["from"], move_param["to"])
+    p "*"*80
+    # Make computer move
+    render :json => { move: move }
+  end
+
+
   def gomoku
     # Reset game
     game = Gomoku.new

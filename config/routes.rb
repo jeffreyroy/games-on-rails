@@ -13,6 +13,11 @@ Rails.application.routes.draw do
   post 'games/checkers/click' => 'games#checkers_click'
   post 'games/checkers/drop' => 'games#checkers_drop'
 
+  # Chess
+  get 'games/chess'
+  post 'games/chess/click' => 'games#chess_click'
+  post 'games/chess/drop' => 'games#chess_drop'
+
   # Gomoku
   get 'games/gomoku'
   post 'games/gomoku/drop' => 'games#gomoku_drop'

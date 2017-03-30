@@ -1,0 +1,2 @@
+class ChessSave < ApplicationRecord
+end

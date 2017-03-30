@@ -1,17 +1,19 @@
 // Page-specific ready function
-$('#checkers').ready(function() {
+$('#chess').ready(function() {
 
-  checkers();
+  chess();
   
 });
 
-var checkers = function() {
+var chess = function() {
   game = new Game();
 
   // Handle click on piece or grid
+  // Need to check whether clicking on white or black piece
+  // Handle click on piece or grid
   game.click = function(event) {
     var cell = event.target;
-    if(event.target.nodeName == "IMG") {
+    if(event.target.classList.contains("white")) {
       clickPiece(cell);
     }
     else {
@@ -59,7 +61,7 @@ var checkers = function() {
     // Perform Ajax call to get list of legal moves from server
     $.ajax({
       method: "post",
-      url: "checkers/click",
+      url: "chess/click",
       data: data
     })
     .done(function(response){
@@ -85,15 +87,15 @@ var checkers = function() {
     }
   }
 
-  // Add king of same color as given piece
-  var addKing = function(piece, coordinates) {
+  // Add queen of same color as promoting pawn
+  var addQueen = function(piece, coordinates) {
     var cellId = gameBoard.getCellId(coordinates[1], coordinates[0]);
     console.log(piece.classList);
-    if(piece.classList.contains("scr") || piece.classList.contains("skr")) {
-      gameBoard.addDraggablePiece(cellId, wk);
+    if(piece.classList.contains("white")) {
+      gameBoard.addDraggablePiece(cellId, wq);
     }
     else {
-      gameBoard.addDraggablePiece(cellId, bk);
+      gameBoard.addDraggablePiece(cellId, bq);
     }
   }
 
@@ -104,31 +106,21 @@ var checkers = function() {
     console.log("Moving from " + pieceImage.parentElement.id + " to " + destinationCell.id );
     // Move piece to destination
     clearCell(destinationCell);
-    // If at end of board, add king
-    if(to[1] == 0 || to[1] == 7) {
-      addKing(pieceImage, to);
+    // If at end of board, promote pawn
+    if(pieceImage.classList.contains("pawn") &&
+      (to[1] == 0 || to[1] == 7)) {
+      addQueen(pieceImage, to);
       clearCell(pieceImage.parentElement);
     }
     else {
       destinationCell.appendChild(pieceImage);
     }
-    // Check for capture
-    console.log ("from " + from[0] + " to " + to[0])
-    var capture = (Math.abs(from[0] - to[0]) == 2)
-    if(capture) {
-      console.log("That's a capture.");
-      // Get square jumped over
-      var intX = (from[0] + to[0]) / 2;
-      var intY = (from[1] + to[1]) / 2;
-      var intCell = gameBoard.cellByCoordinates(intX, intY);
-      console.log("Jumped over " + intCell.id)
-      // Clear captured piece
-      clearCell(intCell);
-    }
+
   };
 
   // Handle click on empty cell
   var clickCell = function(cell) { 
+    if(cell.classList.contains("black")) { cell = cell.parentElement };
     // if(cell.classList.nodeName == "IMG") { alert("Space occupied!"); };
     console.log("clicked on cell " + cell.id);
     piece = game.activePiece;
@@ -159,13 +151,12 @@ var checkers = function() {
     console.log("Submitting move " + from + "-" + to)
       $.ajax({
         method: "post",
-        url: "checkers/drop",
+        url: "chess/drop",
         data: { move: data, cont: cont }
       })
       .done(function(response){
         console.log(response);
         var move = response.move;
-        cont = response.cont;
         // Check whether it is the computer's move
         if(move[0][0] != -1) {
           // Make computer move
@@ -174,10 +165,6 @@ var checkers = function() {
           updateBlurb("I move from " + from.id + " to " + to.id + ".");
           piece = from.firstChild;
           movePiece(piece, to);
-          // Continue making additional moves for computer if possible
-          if(cont) {
-            submitMove([-1,-1], [-1,-1], true);
-          }
 
         }
         // Check to see whether either player has won
@@ -229,35 +216,52 @@ var checkers = function() {
 
   // Create game board
 
-  gameBoard = Grid.generate("board", 31, 31, 8, 8, 68, 68);
-  bm = new Piece("black man", "scb");
-  wm = new Piece("white man", "scr");
-  bk = new Piece("black king", "skb");
-  wk = new Piece("white king", "skr");
-  gameBoard.addDraggablePiece("A1", bm);
-  gameBoard.addDraggablePiece("C1", bm);
-  gameBoard.addDraggablePiece("E1", bm);
-  gameBoard.addDraggablePiece("G1", bm);
-  gameBoard.addDraggablePiece("B2", bm);
-  gameBoard.addDraggablePiece("D2", bm);
-  gameBoard.addDraggablePiece("F2", bm);
-  gameBoard.addDraggablePiece("H2", bm);
-  gameBoard.addDraggablePiece("A3", bm);
-  gameBoard.addDraggablePiece("C3", bm);
-  gameBoard.addDraggablePiece("E3", bm);
-  gameBoard.addDraggablePiece("G3", bm);
-  gameBoard.addDraggablePiece("B6", wm);
-  gameBoard.addDraggablePiece("D6", wm);
-  gameBoard.addDraggablePiece("F6", wm);
-  gameBoard.addDraggablePiece("H6", wm);
-  gameBoard.addDraggablePiece("A7", wm);
-  gameBoard.addDraggablePiece("C7", wm);
-  gameBoard.addDraggablePiece("E7", wm);
-  gameBoard.addDraggablePiece("G7", wm);
-  gameBoard.addDraggablePiece("B8", wm);
-  gameBoard.addDraggablePiece("D8", wm);
-  gameBoard.addDraggablePiece("F8", wm);
-  gameBoard.addDraggablePiece("H8", wm);
+  gameBoard = Grid.generate("board", 23, 25, 8, 8, 90, 90);
+  bp = new Piece("black pawn", "black-pawn");
+  wp = new Piece("white pawn", "white-pawn");
+  bk = new Piece("black king", "black-king");
+  wk = new Piece("white king", "white-king");
+  bq = new Piece("black queen", "black-queen");
+  wq = new Piece("white queen", "white-queen");
+  br = new Piece("black rook", "black-rook");
+  wr = new Piece("white rook", "white-rook");
+  bb = new Piece("black bishop", "black-bishop");
+  wb = new Piece("white bishop", "white-bishop");
+  bn = new Piece("black knight", "black-knight");
+  wn = new Piece("white knight", "white-knight");
+  gameBoard.addDraggablePiece("A2", wp);
+  gameBoard.addDraggablePiece("B2", wp);
+  gameBoard.addDraggablePiece("C2", wp);
+  gameBoard.addDraggablePiece("D2", wp);
+  gameBoard.addDraggablePiece("E2", wp);
+  gameBoard.addDraggablePiece("F2", wp);
+  gameBoard.addDraggablePiece("G2", wp);
+  gameBoard.addDraggablePiece("H2", wp);
+  gameBoard.addDraggablePiece("A7", bp);
+  gameBoard.addDraggablePiece("B7", bp);
+  gameBoard.addDraggablePiece("C7", bp);
+  gameBoard.addDraggablePiece("D7", bp);
+  gameBoard.addDraggablePiece("E7", bp);
+  gameBoard.addDraggablePiece("F7", bp);
+  gameBoard.addDraggablePiece("G7", bp);
+  gameBoard.addDraggablePiece("H7", bp);
+
+  gameBoard.addDraggablePiece("A1", wr);
+  gameBoard.addDraggablePiece("B1", wn);
+  gameBoard.addDraggablePiece("C1", wb);
+  gameBoard.addDraggablePiece("D1", wq);
+  gameBoard.addDraggablePiece("E1", wk);
+  gameBoard.addDraggablePiece("F1", wb);
+  gameBoard.addDraggablePiece("G1", wn);
+  gameBoard.addDraggablePiece("H1", wr);
+  gameBoard.addDraggablePiece("A8", br);
+  gameBoard.addDraggablePiece("B8", bn);
+  gameBoard.addDraggablePiece("C8", bb);
+  gameBoard.addDraggablePiece("D8", bq);
+  gameBoard.addDraggablePiece("E8", bk);
+  gameBoard.addDraggablePiece("F8", bb);
+  gameBoard.addDraggablePiece("G8", bn);
+  gameBoard.addDraggablePiece("H8", br);
 
 
 

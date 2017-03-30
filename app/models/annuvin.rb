@@ -100,7 +100,7 @@ class Annuvin < Game
   def import
     s = AnnuvinSave.first
     @current_state[:position] = position_string_to_array(s.position)
-    player = s.human_to_move ? :human : :computer
+    @current_state[:player] = s.human_to_move ? :human : :computer
     @current_state[:pieces_left] = {
       :human => s.human_pieces_left,
       :computer => s.computer_pieces_left
