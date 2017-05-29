@@ -6,10 +6,11 @@ require_relative 'chess_pieces'
 ## To do:
 # Check and Checkmate (temporarily disabled for speed)
 # Pawn promotion (done)
-# Castling
+# Castling (done, except for legality check)
 # En passant
 # Opening book
 # Put next_state into pieces rather than game?
+# Refactor using classes for states and moves
 
 # Classes
 class Chess < Game

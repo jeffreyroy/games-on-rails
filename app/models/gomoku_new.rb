@@ -4,21 +4,12 @@ require_relative 'game_new'
 
 # Simple implementation of gomoku
 
-class GomokuMove < Move
+class GomokuMove
 
 end
 
-class GomokuState < State
-  attr_reader :position, :player, :last_move, :outer_bounds
-
-
-  include NewMinimaxable
-
-  # Constants
-
-  SYMBOLS = { :human => "X", :computer => "O" }
-  DIRECTIONS = [[1, 0], [0, 1], [1, 1], [-1, 1]]
-
+class GomokuState
+  attr_reader :last_move, :outer_bounds
 
   def initialize(position, player, last_move, outer_bounds)
     @position = position
@@ -115,7 +106,7 @@ class GomokuState < State
     max = 0
     # Loop over all directions
     self.class::DIRECTIONS.each do |direction|
-      check = check_row(row, column, symbol, direction)
+      check = check_row(@position, row, column, symbol, direction)
       max = check if check > max
     end
     return max
@@ -126,7 +117,7 @@ class GomokuState < State
     row = move[0]
     column = move[1]
     symbol = self.class::SYMBOLS[player_to_check]
-    max_in_a_row(row, column, symbol)
+    max_in_a_row(@position, row, column, symbol)
   end
 
   def check_row(row, column, symbol, direction)
@@ -156,7 +147,7 @@ class GomokuState < State
 
   # Check whether game has been lost by the player currently on the move
   # in the specified state
-  def lost?
+  def lost?(state)
     longest_row(opponent) >= 5
   end
 
@@ -172,9 +163,14 @@ end
 
 # FOR SIMPLICITY Moves are restricted to subset of available moves
 # Classes
-class Gomoku < Game
+class NewGomoku < Game
   attr_reader :current_state
   attr_accessor :minimax
+
+  # Constants
+
+  SYMBOLS = { :human => "X", :computer => "O" }
+  DIRECTIONS = [[1, 0], [0, 1], [1, 1], [-1, 1]]
 
   ## 1. Methods common to all games, can be redefined if necessary
 
