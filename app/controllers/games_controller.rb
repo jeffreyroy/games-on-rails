@@ -1,6 +1,13 @@
 class GamesController < ApplicationController
   attr_accessor :current_game
   def index
+    @game_list = {
+      "Chess" => "bigchess.png",
+      "Checkers" => "chess.jpg",
+      "Annuvin" => "Hex3x3wood.png",
+      "Gomoku" => "go.png",
+      "Tictac" => "tictac.png"
+    }
   end
 
   def annuvin

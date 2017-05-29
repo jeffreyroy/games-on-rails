@@ -6,10 +6,11 @@ require_relative 'chess_pieces'
 ## To do:
 # Check and Checkmate (temporarily disabled for speed)
 # Pawn promotion (done)
-# Castling
+# Castling (done, except for legality check)
 # En passant
 # Opening book
 # Put next_state into pieces rather than game?
+# Refactor using classes for states and moves
 
 # Classes
 class Chess < Game
@@ -243,6 +244,19 @@ class Chess < Game
     position[from[0]][from[1]] = "."
     position[to[0]][to[1]] = moving_piece.icon
     moving_piece.location = to
+    # Complete castling by moving rook
+    if moving_piece.class == ChessKing && (from[1] - to[1]).abs == 2
+      rook_column = to[1] == 6 ? 7 : 0
+      castling_rook = pieces[player].find { |piece| piece.location == [from[0], rook_column] }
+      if castling_rook
+        rook_dest = to[1] == 6 ? 5 : 3
+        position[from[0]][rook_column] = "."
+        position[to[0]][rook_dest] = castling_rook.icon
+        castling_rook.location = [to[0], rook_dest]
+      else
+        puts "Castling error -- can't find rook!"
+      end
+    end
     # Switch active player
     next_player = opp
     # # Create new state for testing whether king is in check

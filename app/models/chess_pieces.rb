@@ -143,9 +143,35 @@ class ChessKing < ChessPiece
         move_list << [@location, destination]
       end
     end
-    # Castling not yet implemented
+    move_list += castle_moves(state)
     # Return move list
     move_list
+  end
+
+  # Add castling moves (to be completed)
+  # Doesn't currently check whether king/rook has moved
+  # or whether king is in check
+  # or whether intervening square is attacked
+  def castle_moves(state)
+    castle_move_list = []
+    player = state[:player]
+    # Get list of pieces on home rank
+    home_rank = player == :human ? 7 : 0
+    home_string = state[:position][home_rank].join.downcase
+    # Check whether king is at home
+    if @location[0] == home_rank && @location[1] == 4
+      # Kingside
+      if home_string[4..7] == "k..r"
+        destination = [home_rank, 6]
+        castle_move_list << [@location, destination]
+      end
+      # Queenside
+      if home_string[0..4] == "r...k"
+        destination = [home_rank, 2]
+        castle_move_list << [@location, destination]
+      end
+    end
+    castle_move_list
   end
 end
 

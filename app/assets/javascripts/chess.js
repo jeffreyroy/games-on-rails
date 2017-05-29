@@ -115,8 +115,25 @@ var chess = function() {
     else {
       destinationCell.appendChild(pieceImage);
     }
+    // Move rook to complete castling
+    if(pieceImage.classList.contains("king") &&
+      Math.abs(from[0] - to[0]) == 2) {
+      completeCastling(to);
+    }
 
   };
+
+  // Complete castling
+  var completeCastling = function(kingLocation) {
+    var column = kingLocation[0] == 6 ? 7 : 0;
+    var row = kingLocation[1];
+    console.log("Moving rook at column " + column);
+    var rookCell = gameBoard.cellByCoordinates(column, row);
+    var rook = rookCell.firstChild;
+    var newColumn = column == 7 ? 5 : 3;
+    var rookDestination = gameBoard.cellByCoordinates(newColumn, row);
+    rookDestination.appendChild(rook);
+  }
 
   // Handle click on empty cell
   var clickCell = function(cell) { 
@@ -182,8 +199,8 @@ var chess = function() {
 
   // Check for a win
   var checkForWin = function() {
-    if(lost("scb") && lost("skb")) { updateBlurb("I win!"); }
-    if(lost("scr") && lost("skr")) { updateBlurb("You win!"); }
+    if(lost("white-king")) { updateBlurb("I win!"); }
+    if(lost("black-king")) { updateBlurb("You win!"); }
   }
 
   var lost = function(pieceClass) {

@@ -1,5 +1,5 @@
 // Game class
-// Contains functions to allow cards to be dragged and dropped
+// Contains functions to allow pieces to be dragged and dropped
 // Functions must be customized for a particular game.
 
 function Game() {

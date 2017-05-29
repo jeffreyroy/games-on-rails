@@ -29,6 +29,45 @@ body {
   width: 60px;
 }
 
+.menu {
+  list-style-type: none;
+  font-family: sans-serif;
+}
+
+.game-selection {
+  font-size: 80px;
+}
+
+.game-icon {
+  height: 1em;
+  width: 1em;
+  float: left;
+}
+
+.game-label {
+  margin-left: 10px;
+  text-decoration: none;
+}
+
+a:link {
+    color: black;
+}
+
+/* visited link */
+a:visited {
+    color: black;
+}
+
+/* mouse over link */
+a:hover {
+    color: grey;
+}
+
+/* selected link */
+a:active {
+    color: white;
+}
+
 #bigchess {
   height: 804px;
   width: 804px;
